@@ -1,0 +1,134 @@
+---
+title: "Tarea 1"
+author: Gustavo Hernández Angeles
+output: pdf_document
+---
+#### Inferencia Estadística
+
+
+### Primer problema.
+
+Un conjunto de bits se envían sobre un canal de comunicación en paquetes de 12. Si la probabilidad de que un bit sea corrompido sobre este canal es 0.1 y los errores son independientes:
+
+1. ¿Cuál es la probabilidad de que no más de dos bits de un paquete se corrompan?
+
+2. Si se envían 6 paquetes, ¿cual es la probabilidad de que al menos un paquete contenga 3 o mas bits corruptos?
+
+3. Finalmente, si $X$ denota el número de paquetes conteniendo 3 o más bit corruptos, ¿cuál es la probabilidad de que $X$ excederá su media por más de dos desviaciones estándar?
+
+#### Solución. 
+
+1. Sea $W$ el número de bits corrompidos en el canal. Necesitamos la probabilidad de que se cumpla que máximo 2 bits sean corrompidos dentro de 12 observaciones, es decir: $P( W <=2 )$ utilizando la distribución binomial: $W \sim B(n = 12, p_0 = 0.1)$.
+
+$$ P(W<=2) = P(W = 0) + P(W = 1) + P(W= 2) $$
+```{r}
+p1i1 <- function() {
+    # Declaramos la probabilidad de éxito
+    # y el numero de observaciones.
+
+    p_0 <- 0.1
+    bits_por_paquete <- 12
+
+    # Usamos la función integrada "dbinom" que devuelve
+    # array de flotantes con el valor de las probabilidades para
+    # W=0, W=1, W=2.
+    # También haremos uso de la función "sum" para sumar todos los
+    # elementos del array.
+
+    probabilidad <- sum(dbinom(x = 0:2, size = bits_por_paquete, p = p_0))
+
+    # Imprime resultado con formato.
+    sprintf("P( W <= 2 ) = %.3f", probabilidad)
+}
+
+p1i1()
+```
+$$\boxed{\therefore P( W <= 2 ) = 0.889}$$
+
+2. Sea $X$ el número de paquetes de bits que contienen 3 o más bits corruptos. Se necesita determinar la probabilidad de "éxito" para cada uno de los $k = 6$ paquetes de bits. Ya que estamos determinando la cantidad de éxitos $X$ dentro de un número de observaciones $k$, se propone $X \sim B(k,p)$ buscando $P(X>=1)$.
+
+```{r}
+p1i2 <- function() {
+    # Computamos p = P(W>=3) para obtener el parámetro P de la distribución de X.
+    # Declaramos las k observaciones.
+    p <- sum(dbinom(x = 3:12, size = 12, p = 0.1))
+    k <- 6
+
+    # Calculamos P(X>=1)
+    probabilidad <- sum(dbinom(x = 1:6, size = k, p = p))
+
+    # Se imprime el resultado.
+    sprintf("P( X >= 1 ) = %.3f", probabilidad)
+}
+
+p1i2()
+```
+
+$$\boxed{\therefore P( X >= 1 ) = 0.506}$$
+
+
+3. Se determina la media y la desviación estándar para $X \sim B(k,p)$ con $k=6$ y $p = P(W>=3)$.
+```{r}
+# Declarando la lista de posibles valores de X, k y p.
+valores_x <- c(0:6)
+k <- 6
+p <- sum(dbinom(x = 3:12, size = 12, p = 0.1))
+
+# Iniciamos las variables acumulativas "media" y "varianza"
+media <- 0
+varianza <- 0
+
+# Iteramos sobre los posibles valores de X para determinar la media.
+for (x in valores_x) {
+    media <- media + x * dbinom(x, k, p)
+}
+
+print(media)
+
+
+# Calculando E[x^2] y conociendo la media obtenemos la varianza.
+# Finalmente la desviación estándar.
+for (x in valores_x) {
+    varianza <- varianza + x**2 * dbinom(x, k, p)
+}
+varianza <- varianza - media**2
+
+print(varianza)
+
+desv_est <- varianza**(0.5)
+
+print(desv_est)
+
+# Definimos una variable que contenga el valor a superar y lo mostramos.
+meta <- media + 2 * desv_est
+print(meta)
+
+# Como X toma solo valores enteros, buscamos P( X > = 3). Así.
+probabilidad <- sum(dbinom(3:k, k, p))
+sprintf("P(X >= 3) = %1.3f", probabilidad)
+```
+
+$$\boxed{\therefore P(X > \mu + 2\sigma) = 0.021}$$
+
+
+### Segundo problema.
+
+Una caja contiene 12 manzanas frescas y 4 que están podridas. Si elige 3 al azar y $X$ denota el número de manzanas frescas que tomó, encuentre la función de densidad de $X$ y su esperanza.  
+
+#### Solución.  
+
+Se especifican dos categorías dentro de la población $N$ de las manzanas; 12 manzanas frescas $A$ y 4 podridas $B$, estando interesados únicamente por la primera.
+
+### Tercer problema.
+1. Usando la función `sample`, simule 10 lanzamientos de una moneda equilibrada y cuente el número de águilas que obtiene. Repita este proceso $10^4$ veces y muestre sus primeros 3 resultados. Grafique las frecuencias del número de águilas obtenidas en los $10^4$ experimentos. También grafique las proporciones del número de águilas obtenidas.
+
+2. Usando la función `dbinom` grafique la función de masa de una distribución $B(10,0.5)$ sobre la gráfica de las proporciones que hizo en el inciso anterior.
+
+3. Repita los dos incisos anteriores para una moneda desequilibrada que tiene probabilidad $p = 0.3$ de obtener un águila cuando se lanza. ¿Qué observa?
+
+#### Solución
+
+1. Función `sample`.
+
+
+
