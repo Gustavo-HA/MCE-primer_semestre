@@ -1,0 +1,309 @@
+---
+Title: Problema 4
+author: Gustavo Hernández Angeles
+output: html_document
+---
+
+### Inciso a)
+
+Definimos la función que realizará los $N$ experimentos de lanzamiento de moneda hasta que se obtenga un águila, con una probabilidad $p$ de que esto suceda en cada lanzamiento. La variable output guardará el número de lanzamientos necesarios para que salga águila en cada uno de los $N$ experimentos. 
+
+```{r}
+lanzamiento_hasta_aguila <- function(p, N) {
+    # Definimos a nuestro espacio muestral (0 y 1) donde nuestro
+    # éxito será águila, con un valor de 1.
+    espacio <- c(0, 1)
+    aguila <- 1
+
+    # Inicializamos el vector que guardará los números de lanzamientos
+    # hasta obtener un águila en cada uno de los N experimentos
+    output <- c()
+
+    # Ciclo for que realizará los N experimentos
+    for (i in c(1:N)) {
+        # Inicializamos la variable "valor" que guardará el resultado de un
+        # lanzamiento de moneda. Iniciamos con NULL para que entre al ciclo.
+        # También se inicia el contador de intentos hasta obtener un águila.
+        valor <- NULL
+        contador <- 0
+
+        # Realizamos el lanzamiento de una moneda hasta que el resultado sea
+        # águila e iremos contando el número de lanzamientos hasta que esto suceda.
+        while (is.null(valor) || valor != aguila) {
+            valor <- sample(espacio, 1, prob = c(1 - p, p))
+            contador <- contador + 1
+        }
+
+        # Guardamos el valor del contador en el vector de salida (output).
+        output <- append(output, contador)
+    }
+
+    # Nos interesan la tabla de frecuencias normalizada
+    # de los resultados. Así
+
+    output <- table(output) / N
+    return(output)
+}
+```
+
+
+### Inciso b)
+
+Fijaremos el número de experimentos $N = 10^4$ para realizar la simulación. Probaremos con distintos valores de $p=0.5,0.1,0.01$, y graficaremos las frecuencias normalizadas (proporciones) sobre la función de masa de la distribución geométrica correspondiente.
+
+
+```{r}
+# Establecemos una semilla y el número de experimentos.
+set.seed(13)
+N <- 10^4
+
+# Para p = 0.5
+p <- 0.5
+salida1 <- lanzamiento_hasta_aguila(p, N)
+
+# Para p = 0.1
+p <- 0.1
+salida2 <- lanzamiento_hasta_aguila(p, N)
+
+# Para p = 0.01
+p <- 0.01
+salida3 <- lanzamiento_hasta_aguila(p, N)
+```
+
+Hacemos la gráfica para $p=0.5$ junto a la función de masa correspondiente.
+
+```{r}
+# Se debe cambiar ajustandose a cada máquina.
+ruta_imagenes <- "C:/Users/gusta/Escritorio/"
+```
+
+```{r}
+# Valor de probabildiad
+p <- 0.5
+
+png(
+    filename = paste0(ruta_imagenes, "P4_1.png"),
+    units = "in",
+    width = 4,
+    height = 4,
+    res = 300
+)
+
+# Graficamos las frecuencias normalizadas con p = 0.5 (salida1)
+plot(salida1,
+    type = "h",
+    xlab = "Intentos / experimento", ylab = "Proporción",
+    col = "blue"
+)
+
+# Graficamos la distirbución geométrica desde 0 hasta el valor máximo
+# que haya resultado de nuestra simulación, en este caso fue 15.
+lines(dgeom(0:max(as.integer(names(salida1))), prob = p),
+    type = "h",
+    col = "#000000", lty = "dashed"
+)
+
+dev.off()
+```
+
+
+
+Hacemos la gráfica para $p=0.1$ junto a la función de masa correspondiente.
+
+```{r}
+# Valor de probabildiad
+p <- 0.1
+
+png(
+    filename = paste0(ruta_imagenes, "P4_2.png"),
+    units = "in",
+    width = 4,
+    height = 4,
+    res = 300
+)
+
+# Graficamos las frecuencias normalizadas con p = 0.1 (salida2)
+plot(salida2,
+    type = "h",
+    xlab = "Intentos / experimento", ylab = "Proporción",
+    col = "blue", xaxt = "n"
+)
+
+# Graficamos la distirbución geométrica desde 0 hasta el valor máximo
+# que haya resultado de nuestra simulación.
+lines(dgeom(0:max(as.integer(names(salida2))), prob = p),
+    type = "h",
+    col = "#000000", lty = "dashed"
+)
+axis(side = 1, at = seq(from = 0, to = 80, by = 10))
+
+dev.off()
+```
+
+
+
+Hacemos la gráfica para $p=0.01$ junto a la función de masa correspondiente.
+
+```{r}
+# Valor de probabildiad
+p <- 0.01
+
+png(
+    filename = paste0(ruta_imagenes, "P4_3.png"),
+    units = "in",
+    width = 8,
+    height = 4,
+    res = 300
+)
+
+# Graficamos las frecuencias normalizadas con p = 0.1 (salida2)
+plot(salida3,
+    type = "h",
+    xlab = "Intentos / experimento", ylab = "Proporción",
+    col = "blue", xaxt = "n"
+)
+
+# Graficamos la distirbución geométrica desde 0 hasta el valor máximo
+# que haya resultado de nuestra simulación.
+lines(dgeom(0:max(as.integer(names(salida3))), prob = p),
+    type = "l",
+    col = "#000000", lty = "dashed"
+)
+axis(1, at = seq(from = 0, to = 900, by = 50), las = 2)
+
+
+dev.off()
+```
+
+
+### Incico c)
+
+Ahora debemos repetir lo mismo que el inciso anterior con $N = 10^6$:
+
+```{r}
+# Establecemos una semilla y el número de experimentos.
+set.seed(13)
+N <- 10^6
+
+# Para p = 0.5
+p <- 0.5
+salida1 <- lanzamiento_hasta_aguila(p, N)
+
+# Para p = 0.1
+p <- 0.1
+salida2 <- lanzamiento_hasta_aguila(p, N)
+
+# Para p = 0.01
+p <- 0.01
+salida3 <- lanzamiento_hasta_aguila(p, N)
+```
+
+Hacemos la gráfica para $p=0.5$ junto a la función de masa correspondiente.
+
+```{r}
+# Se debe cambiar ajustandose a cada máquina.
+ruta_imagenes <- "C:/Users/gusta/Escritorio/"
+```
+
+```{r}
+# Valor de probabildiad
+p <- 0.5
+
+png(
+    filename = paste0(ruta_imagenes, "P4_1.png"),
+    units = "in",
+    width = 4,
+    height = 4,
+    res = 300
+)
+
+# Graficamos las frecuencias normalizadas con p = 0.5 (salida1)
+plot(salida1,
+    type = "h",
+    xlab = "Intentos / experimento", ylab = "Proporción",
+    col = "blue"
+)
+
+# Graficamos la distirbución geométrica desde 0 hasta el valor máximo
+# que haya resultado de nuestra simulación, en este caso fue 15.
+lines(dgeom(0:max(as.integer(names(salida1))), prob = p),
+    type = "h",
+    col = "#000000", lty = "dashed"
+)
+
+dev.off()
+```
+
+
+
+Hacemos la gráfica para $p=0.1$ junto a la función de masa correspondiente.
+
+```{r}
+# Valor de probabildiad
+p <- 0.1
+
+png(
+    filename = paste0(ruta_imagenes, "P4_2.png"),
+    units = "in",
+    width = 4,
+    height = 4,
+    res = 300
+)
+
+# Graficamos las frecuencias normalizadas con p = 0.1 (salida2)
+plot(salida2,
+    type = "h",
+    xlab = "Intentos / experimento", ylab = "Proporción",
+    col = "blue", xaxt = "n"
+)
+
+# Graficamos la distirbución geométrica desde 0 hasta el valor máximo
+# que haya resultado de nuestra simulación.
+lines(dgeom(0:max(as.integer(names(salida2))), prob = p),
+    type = "h",
+    col = "#000000", lty = "dashed"
+)
+axis(side = 1, at = seq(from = 0, to = 80, by = 10))
+
+dev.off()
+```
+
+
+
+Hacemos la gráfica para $p=0.01$ junto a la función de masa correspondiente.
+
+```{r}
+# Valor de probabildiad
+p <- 0.01
+
+png(
+    filename = paste0(ruta_imagenes, "P4_3.png"),
+    units = "in",
+    width = 8,
+    height = 4,
+    res = 300
+)
+
+# Graficamos las frecuencias normalizadas con p = 0.1 (salida2)
+plot(salida3,
+    type = "h",
+    xlab = "Intentos / experimento", ylab = "Proporción",
+    col = "blue", xaxt = "n"
+)
+
+# Graficamos la distirbución geométrica desde 0 hasta el valor máximo
+# que haya resultado de nuestra simulación.
+lines(dgeom(0:max(as.integer(names(salida3))), prob = p),
+    type = "l",
+    col = "#000000", lty = "dashed"
+)
+axis(1, at = seq(from = 0, to = 900, by = 50), las = 2)
+
+
+dev.off()
+```
+
+
+
+
+
