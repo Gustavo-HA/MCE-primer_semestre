@@ -37,8 +37,8 @@ lanzamiento_hasta_aguila <- function(p, N) {
         # Guardamos el valor del contador en el vector de salida (output).
         output <- append(output, contador)
         
-        # debug 
-        if (i %% 1000 == 0) print(i)
+        # progreso 
+        if (i %% 1000 == 0) message(sprintf("%.2f %%...",i/N*100)) 
         
         
     }
