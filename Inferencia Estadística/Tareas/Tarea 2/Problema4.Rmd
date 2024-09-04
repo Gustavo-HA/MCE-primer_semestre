@@ -36,6 +36,11 @@ lanzamiento_hasta_aguila <- function(p, N) {
 
         # Guardamos el valor del contador en el vector de salida (output).
         output <- append(output, contador)
+        
+        # debug 
+        if (i %% 1000 == 0) print(i)
+        
+        
     }
 
     # Nos interesan la tabla de frecuencias normalizada
@@ -178,7 +183,7 @@ dev.off()
 
 ### Incico c)
 
-Ahora debemos repetir lo mismo que el inciso anterior con $N = 10^6$:
+Ahora debemos repetir lo mismo que el inciso anterior con $N = 10^6$. Cabe destacar que el tiempo de cómputo para el siguiente bloque de código fue alrededor de una hora.
 
 ```{r}
 # Establecemos una semilla y el número de experimentos.
@@ -202,7 +207,7 @@ Hacemos la gráfica para $p=0.5$ junto a la función de masa correspondiente.
 
 ```{r}
 # Se debe cambiar ajustandose a cada máquina.
-ruta_imagenes <- "C:/Users/gusta/Escritorio/"
+ruta_imagenes <- "C:/Users/Gus/Desktop/"
 ```
 
 ```{r}
@@ -210,7 +215,7 @@ ruta_imagenes <- "C:/Users/gusta/Escritorio/"
 p <- 0.5
 
 png(
-    filename = paste0(ruta_imagenes, "P4_1.png"),
+    filename = paste0(ruta_imagenes, "P4_c1.png"),
     units = "in",
     width = 4,
     height = 4,
@@ -243,7 +248,7 @@ Hacemos la gráfica para $p=0.1$ junto a la función de masa correspondiente.
 p <- 0.1
 
 png(
-    filename = paste0(ruta_imagenes, "P4_2.png"),
+    filename = paste0(ruta_imagenes, "P4_c2.png"),
     units = "in",
     width = 4,
     height = 4,
@@ -277,11 +282,11 @@ Hacemos la gráfica para $p=0.01$ junto a la función de masa correspondiente.
 p <- 0.01
 
 png(
-    filename = paste0(ruta_imagenes, "P4_3.png"),
+    filename = paste0(ruta_imagenes, "P4_c3.png"),
     units = "in",
     width = 8,
     height = 4,
-    res = 300
+    res = 500
 )
 
 # Graficamos las frecuencias normalizadas con p = 0.1 (salida2)
@@ -297,7 +302,7 @@ lines(dgeom(0:max(as.integer(names(salida3))), prob = p),
     type = "l",
     col = "#000000", lty = "dashed"
 )
-axis(1, at = seq(from = 0, to = 900, by = 50), las = 2)
+axis(1, at = seq(from = 0, to = 1200, by = 50), las = 2)
 
 
 dev.off()
