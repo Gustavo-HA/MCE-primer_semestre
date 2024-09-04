@@ -36,11 +36,9 @@ lanzamiento_hasta_aguila <- function(p, N) {
 
         # Guardamos el valor del contador en el vector de salida (output).
         output <- append(output, contador)
-        
-        # progreso 
-        if (i %% 1000 == 0) message(sprintf("%.2f %%...",i/N*100)) 
-        
-        
+
+        # Imprime el progreso por cada mil iteraciones.
+        if (i %% 1000 == 0) message(sprintf("%.2f %%...", i / N * 100))
     }
 
     # Nos interesan la tabla de frecuencias normalizada
@@ -309,6 +307,30 @@ dev.off()
 ```
 
 
+Calculando la media y la desviación estándar con los resultados de la simulación, con $N = 10^6$. Para $p_1 = 0.5$:
 
+```{r}
+# Después de la lección sobre vectorización en R las cosas son más sencillas.
+# Para p = 0.5
+media_1 <- sum(as.integer(names(salida1)) * salida1)
+stdev_1 <- sqrt(sum(as.integer(names(salida1))**2 * salida1) - media_1**2)
+
+error_media_1 <- (2 - media_1) / 2 * 100
+error_stdev_1 <- (sqrt(2) - stdev_1) / sqrt(2) * 100
+
+# Realizamos lo mismo para las demás casos; p = 0.1, 0.01
+
+media_2 <- sum(as.integer(names(salida2)) * salida2)
+stdev_2 <- sqrt(sum(as.integer(names(salida2))**2 * salida2) - media_2**2)
+
+error_media_2 <- (10 - media_2) / 10 * 100
+error_stdev_2 <- (sqrt(90) - stdev_2) / sqrt(90) * 100
+
+media_3 <- sum(as.integer(names(salida3)) * salida3)
+stdev_3 <- sqrt(sum(as.integer(names(salida3))**2 * salida3) - media_3**2)
+
+error_media_3 <- (100 - media_3) / 100 * 100
+error_stdev_3 <- (sqrt(9900) - stdev_3) / sqrt(9900) * 100
+```
 
 
