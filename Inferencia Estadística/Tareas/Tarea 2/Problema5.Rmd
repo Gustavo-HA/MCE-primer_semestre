@@ -1,0 +1,76 @@
+---
+Title: Problema 5
+author: Gustavo Hernández Angeles
+output: html_document
+---
+
+Este problema se debe hacer algo muy similar al problema 4. Solo haremos un pequeño cambio en la condición de paro en los experimentos; iniciaremos una variable contador llamada "r_contador" que contará la cantidad de éxitos obtenidos en los experimentos. Esta variable dependerá del argumento de la función "r" que serán el número de éxitos que se obtendrá en cada experimento. La condición dentro del while ahora será mientras r_contador < r.
+
+```{r}
+lanzamiento_hasta_r_exitos <- function(p, N, r) {
+    # Definimos a nuestro espacio muestral (0 y 1) donde nuestro
+    # éxito será águila, con un valor de 1.
+    espacio <- c(0, 1)
+    aguila <- 1
+
+    # Inicializamos el vector que guardará los números de lanzamientos
+    # hasta obtener un águila en cada uno de los N experimentos
+    output <- c()
+
+    # Ciclo for que realizará los N experimentos
+    for (i in c(1:N)) {
+        # Inicializamos la variable "valor" que guardará el resultado de un
+        # lanzamiento de moneda. Iniciamos con NULL para que entre al ciclo.
+        # También se inicia el contador de intentos hasta obtener las r águilas.
+        valor <- NULL
+        contador <- 0
+        
+        # Inicializamos contador de águilas
+        r_contador <- 0
+        
+        # Realizamos el lanzamiento de una moneda hasta que el resultado sea
+        # águila e iremos contando el número de lanzamientos hasta que esto suceda.
+        while (r_contador < r) {
+            valor <- sample(espacio, 1, prob = c(1 - p, p))
+            contador <- contador + 1
+            
+            # Sumamos a nuestro contador de éxitos si el resultado fue águila.
+            if (valor == aguila) r_contador <- r_contador + 1
+        }
+
+        # Guardamos el valor del contador en el vector de salida (output).
+        output <- append(output, contador)
+
+        # Imprime el progreso por cada mil iteraciones.
+        if (i %% 1000 == 0) message(sprintf("%.2f %%...", i / N * 100))
+    }
+
+    # Nos interesan la tabla de frecuencias normalizada
+    # de los resultados. Así
+
+    output <- table(output) / N
+    return(output)
+}
+```
+
+
+Realizamos las simulaciones con los parámetros correspondientes.
+
+```{r}
+N <- 10^6
+
+# Para p = 0.2, r = 2
+p <- 0.2
+r <- 2
+resultado1 <- lanzamiento_hasta_r_exitos(p, N, r)
+
+
+# Para p = 0.1, r = 7
+p <- 0.1
+r <- 7
+resultado2 <- lanzamiento_hasta_r_exitos(p, N, r)
+
+```
+
+
+

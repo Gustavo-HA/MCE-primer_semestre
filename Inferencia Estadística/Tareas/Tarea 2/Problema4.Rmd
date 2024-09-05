@@ -38,7 +38,7 @@ lanzamiento_hasta_aguila <- function(p, N) {
         output <- append(output, contador)
 
         # Imprime el progreso por cada mil iteraciones.
-        if (i %% 1000 == 0) message(sprintf("%.2f %%...", i / N * 100))
+        # if (i %% 1000 == 0) message(sprintf("%.2f %%...", i / N * 100))
     }
 
     # Nos interesan la tabla de frecuencias normalizada
@@ -72,6 +72,52 @@ salida2 <- lanzamiento_hasta_aguila(p, N)
 p <- 0.01
 salida3 <- lanzamiento_hasta_aguila(p, N)
 ```
+
+Vamos a hacer una función para reproducir las gráficas.
+
+```{r}
+p4_graficas <- function(tabla_frecuencia,
+                        p,
+                        nombre_grafica,
+                        ancho=4, alto=4,
+                        ticks_x = NULL,
+                        dist_con_linea = FALSE){
+  png(
+    filename = paste0(ruta_imagenes, nombre_grafica),
+    units = "in",
+    width = ancho,
+    height = alto,
+    res = 300
+  )
+  
+  # Graficamos las frecuencias normalizadas con p = 0.5 (salida1)
+  plot(tabla_frecuencia,
+      type = "h",
+      xlab = "Intentos / experimento", ylab = "Proporción",
+      col = "blue", xaxt = "n"
+  )
+  
+  # Graficamos la distirbución geométrica desde 0 hasta el valor máximo
+  # que haya resultado de nuestra simulación, en este caso fue 15.
+  
+  tipo <- if (dist_con_linea) "l" else "h"
+  
+  lines(y = dgeom(0:max(as.integer(names(tabla_frecuencia))), prob = p),
+    x = c(1:(max(as.integer(names(tabla_frecuencia)))+1))+0.2,
+    type = tipo,
+    col = "#000000", lty = "dashed"
+  )
+  
+  if (!is.null(ticks_x)) axis(side = 1, at = seq(from = 0,
+                                                 to = ticks_x[1],
+                                                 by = ticks_x[2]))
+  
+  dev.off()
+}
+
+
+```
+
 
 Hacemos la gráfica para $p=0.5$ junto a la función de masa correspondiente.
 
@@ -229,7 +275,8 @@ plot(salida1,
 
 # Graficamos la distirbución geométrica desde 0 hasta el valor máximo
 # que haya resultado de nuestra simulación, en este caso fue 15.
-lines(dgeom(0:max(as.integer(names(salida1))), prob = p),
+lines(y = dgeom(0:max(as.integer(names(salida1))), prob = p),
+    x = c(1:(max(as.integer(names(salida1)))+1))+0.2,
     type = "h",
     col = "#000000", lty = "dashed"
 )
@@ -257,16 +304,19 @@ png(
 plot(salida2,
     type = "h",
     xlab = "Intentos / experimento", ylab = "Proporción",
-    col = "blue", xaxt = "n"
+    col = "blue", xlim = c(0,50),
+    xaxt = "n"
 )
 
 # Graficamos la distirbución geométrica desde 0 hasta el valor máximo
 # que haya resultado de nuestra simulación.
-lines(dgeom(0:max(as.integer(names(salida2))), prob = p),
+lines(y = dgeom(0:max(as.integer(names(salida2))), prob = p),
+    x = c(1:(max(as.integer(names(salida2)))+1))+0.2,
     type = "h",
     col = "#000000", lty = "dashed"
 )
-axis(side = 1, at = seq(from = 0, to = 80, by = 10))
+
+axis(side = 1, at = seq(from = 0, to = 50, by = 5))
 
 dev.off()
 ```
