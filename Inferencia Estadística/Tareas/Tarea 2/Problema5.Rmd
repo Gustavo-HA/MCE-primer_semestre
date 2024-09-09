@@ -62,15 +62,94 @@ N <- 10^6
 # Para p = 0.2, r = 2
 p <- 0.2
 r <- 2
-resultado1 <- lanzamiento_hasta_r_exitos(p, N, r)
+p5_1 <- lanzamiento_hasta_r_exitos(p, N, r)
 
 
 # Para p = 0.1, r = 7
 p <- 0.1
 r <- 7
-resultado2 <- lanzamiento_hasta_r_exitos(p, N, r)
+p5_2 <- lanzamiento_hasta_r_exitos(p, N, r)
 
 ```
 
+Para las gráficas utilizaremos una función similar al problema anterior, adaptandola a la distribución no binomial correspondiente a cada simulación.
+
+```{r}
+p5_graficas <- function(tabla_frecuencia,
+                        p,
+                        r,
+                        nombre_grafica,
+                        N, # Introducimos N como un texto para la leyenda.
+                        ticks_x, # Indica final y separación entre xticks
+                        ancho=4, alto=4, # En pulgadas, dimensiones de grafica
+                        dist_con_linea = FALSE, # TRUE si se grafica la dist como linea,
+                        limite_x = NULL
+                        ){
+  
+  png(
+    filename = paste0(ruta_imagenes, nombre_grafica),
+    units = "in",
+    width = ancho,
+    height = alto,
+    res = 1000
+  )
+  
+  # Graficamos las frecuencias normalizadas con la variable tabla_frecuencia,
+  # que es el output de la función lanzamiento_hasta_aguila.
+  # Aquí también delimitamos el plot (por motivos de visualización) con xlim.
+  # xaxt = "n" quita los ticks por default, que se comportaban de forma errática
+  # con conjuntos de datos grandes.
+  plot(tabla_frecuencia,
+      xlab = paste("Intentos hasta",r,"éxitos"), ylab = "Frecuencias normalizadas",
+      col = "blue", xaxt = "n", xlim = if (is.null(limite_x)) NULL else c(0,limite_x)
+  )
+  
+  # Si el argumento dist_con_linea es TRUE, se grafica a la distribución
+  # geometrica como una línea continua, en lugar de barra.
+  tipo <- if (dist_con_linea) "l" else "h"
+  
+  # Se grafica la función de masa de la distribución geométrica correspondiente.
+  # Se grafica del 0 hasta el valor máximo obtenido en los experimentos, se 
+  # desplaza un poco su posición x para motivos de visualización.
+  lines(y = dnbinom(0:max(as.integer(names(tabla_frecuencia))),size = r, prob = p),
+    x = c(r:(max(as.integer(names(tabla_frecuencia)))+r))+0.4,
+    type = tipo,
+    col = "#000000", lty = 1
+  )
+  
+  # Si se especifican los ticks en x, se muestran
+  if (!is.null(ticks_x)) axis(side = 1, at = seq(from = 0,
+                                                 to = ticks_x[1],
+                                                 by = ticks_x[2]))
+  
+  # Añadimos leyendas que indican cada gráfica.
+  legend(x = "topright", legend = c(paste("Simulación: N =",N),paste("NB( p =",p,", r =",r,")")),
+         bty = "n", lty = c(1,1), col = c("blue","black"), cex = 0.7)
+  
+  dev.off()
+}
+```
+
+
+Se realizan las gráficas llamando a la función para generarlas, para cada caso requerido con $N=10^6$:
+
+```{r}
+
+
+# Para p = 0.2, r = 2
+p <- 0.2
+r <- 2
+p5_graficas(p5_1,p,r,"p5_1.png",N = "10^6",
+            ticks_x = c(70,10), limite_x = 40)
+
+
+# Para p = 0.1, r = 7
+p <- 0.1
+r <- 7
+p5_graficas(p5_2,p,r,"p5_2.png",N = "10^6",
+            ticks_x = c(250,50), limite_x = 200, dist_con_linea = TRUE)
+
+
+```
 
 
