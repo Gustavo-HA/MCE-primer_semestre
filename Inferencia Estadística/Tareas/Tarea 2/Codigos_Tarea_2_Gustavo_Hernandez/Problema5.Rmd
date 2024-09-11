@@ -87,7 +87,7 @@ p5_graficas <- function(tabla_frecuencia,
                         ){
   
   png(
-    filename = paste0(ruta_imagenes, nombre_grafica),
+    filename = nombre_grafica,
     units = "in",
     width = ancho,
     height = alto,

@@ -86,7 +86,7 @@ p4_graficas <- function(tabla_frecuencia,
                         limite_x = NULL
                         ){
   png(
-    filename = paste0(ruta_imagenes, nombre_grafica),
+    filename = nombre_grafica,
     units = "in",
     width = ancho,
     height = alto,
@@ -130,10 +130,6 @@ p4_graficas <- function(tabla_frecuencia,
 }
 ```
 
-```{r}
-# Se debe cambiar para cada máquina.
-ruta_imagenes <- "C:/Users/Gus/Desktop/"
-```
 
 
 Hacemos las gráficas de los resultados para cada valor de $p$ y con $N = 10^4$.

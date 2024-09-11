@@ -1,3 +1,5 @@
 # Cosas rancias de RStudio
-*.RData
 *.Rhistory
+
+# Zip de codigos (Inferencia Estadística)
+*z.zip
