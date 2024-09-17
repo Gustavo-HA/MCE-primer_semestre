@@ -23,4 +23,7 @@ def problema_x(n: int) -> str:
 
 
 n = int(input())
-print(problema_x(n))
+solucion = problema_x(n)
+
+text_file = open("Ejercicio9.txt","w")
+text_file.write(solucion)
