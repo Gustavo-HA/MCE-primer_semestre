@@ -1,0 +1,51 @@
+---
+Title: Problema 3
+author: Gustavo Hernández Angeles
+output: html_document
+---
+
+Definimos las constantes de nuestro problema
+
+```{r}
+p <- 0.1
+A <- c(5, 10, 20, 50, 100, 500)
+```
+
+Haremos una función que haga la gráfica de la distribución Binomial junto a la de una función de densidad de una distribución normal, cuyos parámetros (de ambas gráficas) dependerán de $n$ y $p$.
+
+```{r}
+library(ggplot2)
+
+binom_y_normal <- function(n,p){
+  media <- n*p
+  desv <- n*p*(1-p)
+  
+  # Valores para la función de masa para la binomial
+  x_binom <- c(0:as.integer(media+3*desv))
+  y_binom <- dbinom(x_binom, size = n, prob = p)
+  
+
+  # Para la normal, siguiendo el teorema TML
+
+  x_normal <- seq(from = -1, to = media+2*desv, by = 0.1)
+  y_normal <- dnorm(x_normal, mean = media, sd = desv)
+  
+  # Hacemos la gráfica con ggplo2
+  colors <- c("Normal" = "red", "Binomial" = "black")
+  ggplot() +
+    geom_col(mapping = aes(x = x_binom, y = y_binom, color = "Binomial")) +
+    geom_line(mapping = aes(x = x_normal, y = y_normal, color = "Normal")) +
+    labs(x = "x", y = NULL, color = "Función") +
+    xlim(0,media+3*desv) +
+    scale_color_manual(values = colors)
+  ggsave(paste0("p3_a",n,".png"), device = "png", width = 4, height = 4, units = "in", dpi = 400)
+}
+```
+
+Utilizamos la función lapply para ejecutar la función para cada elemento de A:
+
+```{r}
+lapply(A, FUN = function(m) binom_y_normal(n = m, p = p))
+```
+
+

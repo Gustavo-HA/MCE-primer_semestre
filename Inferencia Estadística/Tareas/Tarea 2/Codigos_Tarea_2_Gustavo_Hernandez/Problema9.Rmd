@@ -10,35 +10,34 @@ Primero simularemos trayectorias de un proceso de Poisson con $\lambda= 2$ sobre
 # La función dependerá únicamente del parámetro lambda y del valor superior del
 # intervalo donde se evaluará. Opcionalmente, se pone el número de subintervalos.
 
-simulacion_poisson <- function(lambda, fin_de_intervalo, n_intervalos = 1000){
-  
+simulacion_poisson <- function(lambda, fin_de_intervalo, n_intervalos = 1000) {
   # Definimos los subintervalos.
-  inferior <- seq(from = 0, to = fin_de_intervalo, length.out = n_intervalos+1)
+  inferior <- seq(from = 0, to = fin_de_intervalo, length.out = n_intervalos + 1)
   inferior <- inferior[-length(inferior)] # Quitamos el fin de intervalo.
-  dt <- inferior[2]-inferior[1]
+  dt <- inferior[2] - inferior[1]
   superior <- inferior + dt
-  
+
   # Debido a que despreciamos la probabilidad de que dos o más sucesos ocurran
   # en un intervalo dt suficientemente pequeño, evaluaremos únicamente la probab
   # ilidad de que ocurra un evento en el intervalito de tiempo (bernoulli).
-  
-  # Guardaremos los éxitos hasta el tiempo t, 
+
+  # Guardaremos los éxitos hasta el tiempo t,
   exitos_hasta_t <- c()
   exitos <- 0
-  
+
   # y si hubo un éxito en t.
   exito_en_t <- c()
-  
+
   # Definimos la probabilidad como en la pista.
-  p_exito <- lambda*dt + 10^(-6)
-  
-  for (i in 1:n_intervalos){
-    valor <- sample(x = 0:1, size = 1, prob = c(1-p_exito,p_exito))
+  p_exito <- lambda * dt + 10^(-6)
+
+  for (i in 1:n_intervalos) {
+    valor <- sample(x = 0:1, size = 1, prob = c(1 - p_exito, p_exito))
     exitos <- exitos + valor
-    exitos_hasta_t <- append(exitos_hasta_t,exitos)
+    exitos_hasta_t <- append(exitos_hasta_t, exitos)
     exito_en_t <- append(exito_en_t, valor)
   }
-  
+
   # Para graficar, retornaremos un dataframe con t y si hubo un éxito ahí.
   return(data.frame(t = inferior, exitos = exitos_hasta_t, exito = exito_en_t))
 }
@@ -54,10 +53,10 @@ fin_de_intervalo <- 10
 
 # Realizamos las 3 simulaciones y le añadimos la etiqueta del número de simulación
 # en cada una mediante el atributo sim.
-p9_1 <- lapply(1:3, function(n) data.frame(simulacion_poisson(lambda,fin_de_intervalo), sim = n))
+p9_1 <- lapply(1:3, function(n) data.frame(simulacion_poisson(lambda, fin_de_intervalo), sim = n))
 
 library(plyr) # Para poder añadir registros de distintos dataframes.
-p9_1 <- ldply(p9_1,data.frame)
+p9_1 <- ldply(p9_1, data.frame)
 
 # Para las gráficas en función del número de simulación.
 p9_1$sim <- factor(p9_1$sim)
@@ -70,14 +69,16 @@ Los graficamos mediante geom_step() del paquete ggplot2.
 library(ggplot2)
 ggplot(data = p9_1, mapping = aes(x = t, y = exitos, colour = sim)) +
   geom_step() +
-  labs(title = "Trayectorias de procesos de Poisson",
-       colour = "Simulación", x = "Tiempo (t)", y = "N(t)") +
+  labs(
+    title = "Trayectorias de procesos de Poisson",
+    colour = "Simulación", x = "Tiempo (t)", y = "N(t)"
+  ) +
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
 ```
 
 Y finalmente, guardamos la gráfica con la función ggsave():
 ```{r}
-ggsave("p9_1.png", device = "png", width = 4,height = 4, units = "in", dpi = 400)
+ggsave("p9_1.png", device = "png", width = 4, height = 4, units = "in", dpi = 400)
 ```
 
 
@@ -86,17 +87,16 @@ ggsave("p9_1.png", device = "png", width = 4,height = 4, units = "in", dpi = 400
 Utilizamos un bloque de código idéntico al proceso anterior para realizar las simulaciones.
 
 ```{r}
-lambda <- 1/2
+lambda <- 1 / 2
 fin_de_intervalo <- 1
 
 k <- 10^4
 # Realizamos las k simulaciones y le añadimos la etiqueta del número de simulación
-# en cada una mediante el atributo sim. 
-p9_2 <- lapply(1:k, function(n) data.frame(simulacion_poisson(lambda,fin_de_intervalo), sim = n))
+# en cada una mediante el atributo sim.
+p9_2 <- lapply(1:k, function(n) data.frame(simulacion_poisson(lambda, fin_de_intervalo), sim = n))
 
 library(plyr) # Para poder añadir registros de distintos dataframes.
-p9_2 <- ldply(p9_2,data.frame)
-
+p9_2 <- ldply(p9_2, data.frame)
 ```
 
 El resultado de las simulaciones nos devuelve un dataframe donde encontramos el número de simulación, el tiempo, la cantidad de éxitos en tal tiempo, y la cantidad de éxitos acumulados por simulación desde t=0.
@@ -106,21 +106,23 @@ Para poder realizar el histograma debemos hallar el número de éxitos en total 
 ```{r}
 library(dplyr) # Para usar la función group_by
 
-p9_2 <- p9_2 %>% 
+p9_2 <- p9_2 %>%
   dplyr::group_by(sim) # Agrupamos por simulación
 
 # Sumamos los éxitos por simulación
-resultado_simulacion <- summarise(p9_2,maximo = sum(exito))
+resultado_simulacion <- summarise(p9_2, maximo = sum(exito))
 
 
 # Hacemos una tabla de frecuencias con table() y normalizamos
 resultado_simulacion <- table(resultado_simulacion["maximo"])
-resultado_simulacion <- resultado_simulacion/sum(resultado_simulacion)
+resultado_simulacion <- resultado_simulacion / sum(resultado_simulacion)
 
-# Guardamos los datos en un dataframe especificando su valor correspondiente de 
+# Guardamos los datos en un dataframe especificando su valor correspondiente de
 # x, y la fuente de los datos (la simulación) N(1)
-resultado_simulacion <- data.frame(x = 0:(length(resultado_simulacion)-1),
-                        p = as.numeric(resultado_simulacion), fuente = "N(1)")
+resultado_simulacion <- data.frame(
+  x = 0:(length(resultado_simulacion) - 1),
+  p = as.numeric(resultado_simulacion), fuente = "N(1)"
+)
 ```
 
 Evaluamos ahora la distribución de poisson correspondiente, en este caso se utiliza $\lambda = 1/2$ sobre el intervalo $[0,t]$ con $t = 1$. Por lo que la distribución de Poisson a utilizar es Poisson$(\lambda \cdot t)=$ Poisson$(1/2)$.
@@ -129,33 +131,39 @@ Evaluamos ahora la distribución de poisson correspondiente, en este caso se uti
 # Calculamos la distribución de Poisson correspondiente Poisson(lambda*t)
 # donde lambda = 1/2 y t = 1.
 
-lambda = 1/2
-t = 1
+lambda <- 1 / 2
+t <- 1
 
-dist_pois <- dpois(0:(nrow(resultado_simulacion)-1),lambda*t) # Hasta donde llegó la simulacion
-dist_pois <- data.frame(x = 0:(nrow(resultado_simulacion)-1),
-                        p = dist_pois, fuente = "Poisson(1/2)")
+dist_pois <- dpois(0:(nrow(resultado_simulacion) - 1), lambda * t) # Hasta donde llegó la simulacion
+dist_pois <- data.frame(
+  x = 0:(nrow(resultado_simulacion) - 1),
+  p = dist_pois, fuente = "Poisson(1/2)"
+)
 ```
 
 Finalmente, unimos los dos dataframes en uno solo para proceder con la graficación.
 
 ```{r}
 # Unimos los dos dataframes en uno, de nuevo, con la función ldply()
-datos <- ldply(list(resultado_simulacion,dist_pois),data.frame)
+datos <- ldply(list(resultado_simulacion, dist_pois), data.frame)
 
 
 ggplot(datos) +
-  geom_col(aes(x=x,y = p, fill = fuente), position = "dodge", width = 0.3) +
-  labs(colour = "Simulación", 
-       x = "x", y = "Frecuencia normalizada") +
-  theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5),
-        legend.title = element_blank())
+  geom_col(aes(x = x, y = p, fill = fuente), position = "dodge", width = 0.3) +
+  labs(
+    colour = "Simulación",
+    x = "x", y = "Frecuencia normalizada"
+  ) +
+  theme(
+    legend.position = "bottom", plot.title = element_text(hjust = 0.5),
+    legend.title = element_blank()
+  )
 ```
 
 Guardamos la figura.
 
 ```{r}
-ggsave("p9_2.png", device = "png", width = 4,height = 4, units = "in", dpi = 400)
+ggsave("p9_2.png", device = "png", width = 4, height = 4, units = "in", dpi = 400)
 ```
 
 
