@@ -16,36 +16,64 @@ Haremos una función que haga la gráfica de la distribución Binomial junto a l
 ```{r}
 library(ggplot2)
 
-binom_y_normal <- function(n,p){
+binom_y_normal_f <- function(n, p){
   media <- n*p
-  desv <- n*p*(1-p)
+  desv <- (n*p*(1-p))**0.5
   
   # Valores para la función de masa para la binomial
-  x_binom <- c(0:as.integer(media+3*desv))
+  x_binom <- c(0:n)
   y_binom <- dbinom(x_binom, size = n, prob = p)
   
 
   # Para la normal, siguiendo el teorema TML
 
-  x_normal <- seq(from = -1, to = media+2*desv, by = 0.1)
+  x_normal <- seq(from = -1.1*n, to = 1.1*n, by = 0.1)
   y_normal <- dnorm(x_normal, mean = media, sd = desv)
   
-  # Hacemos la gráfica con ggplo2
-  colors <- c("Normal" = "red", "Binomial" = "black")
-  ggplot() +
-    geom_col(mapping = aes(x = x_binom, y = y_binom, color = "Binomial")) +
-    geom_line(mapping = aes(x = x_normal, y = y_normal, color = "Normal")) +
-    labs(x = "x", y = NULL, color = "Función") +
-    xlim(0,media+3*desv) +
-    scale_color_manual(values = colors)
-  ggsave(paste0("p3_a",n,".png"), device = "png", width = 4, height = 4, units = "in", dpi = 400)
+  # Hacemos la gráfica con ggplo2, para esto, necesitamos tener nuestros
+  # datos como un dataframe
 }
 ```
+
 
 Utilizamos la función lapply para ejecutar la función para cada elemento de A:
 
 ```{r}
-lapply(A, FUN = function(m) binom_y_normal(n = m, p = p))
+lapply(A, FUN = function(m) binom_y_normal_f(n = m, p = p))
+```
+Ahora, haremos la función análoga a `binom_y_normal_f` para que grafique ahora la función de distribución para las distribuciones normal y binomial.
+
+```{r}
+library(ggplot2)
+
+binom_y_normal_F <- function(n,p){
+  media <- n*p
+  desv <- (n*p*(1-p))**0.5
+  
+  # Valores para la función de masa para la binomial
+  x_binom <- c(-1:n)
+  y_binom <- pbinom(x_binom, size = n, prob = p)
+  
+
+  # Para la normal, siguiendo el teorema TML
+
+  x_normal <- seq(from = -1, to = 1.1*n, by = 0.1)
+  y_normal <- pnorm(x_normal, mean = media, sd = desv)
+  
+  # Hacemos la gráfica con ggplo2
+  colors <- c("Normal" = "red", "Binomial" = "black")
+  ggplot() +
+    geom_line(mapping = aes(x = x_binom, y = y_binom), colour = "black") +
+    geom_line(mapping = aes(x = x_normal, y = y_normal), colour = "red") +
+    labs(x = "x", y = NULL, color = "Función", fill = NULL) +
+    scale_color_manual(values = colors)
+  ggsave(paste0("p3_b",n,".png"), device = "png", width = 4, height = 4, units = "in", dpi = 400)
+}
 ```
 
+Y la ejecutamos a través de todos los elementos de A con la función lapply:
+
+```{r}
+lapply(A, FUN = function(m) binom_y_normal_F(n = m,p = p))
+```
 
