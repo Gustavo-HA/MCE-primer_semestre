@@ -4,6 +4,8 @@
 # (), [], {}.  Por lo que no verificaremos si la expresión
 # como tal tiene errores ( e.g. [1+]1 ).
 
+# ------------ Se pudo hacer con pilas
+
 
 def esta_formateada(cadena : str):
     # Realizaremos la verificación mediante un

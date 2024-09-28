@@ -1,5 +1,7 @@
 # Estamos perdidos
 
+# ------------------ Se pudo hacer con colas.
+
 # El programa buscará todos los caminos posibles y se agregarán
 # a un diccionario como key y el valor será su longitud.
 caminos = dict()

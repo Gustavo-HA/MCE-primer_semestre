@@ -1,5 +1,7 @@
 # El número faltante
 
+# ------ Se pudo haber hecho con busqueda binaria.
+
 def numero_faltante(n,lista):
     for i in range(n):
         if i+1 != lista[i]: 
