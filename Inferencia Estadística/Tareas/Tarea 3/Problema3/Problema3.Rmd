@@ -1,0 +1,127 @@
+---
+Title: Problema 3
+author: Gustavo Hernández Angeles
+output: html_document
+---
+
+### Inciso a)
+
+Definimos las constantes de nuestro problema
+
+```{r}
+p <- 0.1
+A <- c(5, 10, 20, 50, 100, 500)
+```
+
+Haremos una función que haga la gráfica de la distribución Binomial junto a la de una función de densidad de una distribución normal, cuyos parámetros (de ambas gráficas) dependerán de $n$ y $p$.
+
+```{r}
+library(ggplot2)
+
+binom_y_normal_f <- function(n, p){
+  media <- n*p
+  desv <- (n*p*(1-p))**0.5
+  
+  # Valores para la función de masa para la binomial
+  x_binom <- c(0:n)
+  y_binom <- dbinom(x_binom, size = n, prob = p)
+  
+
+  # Para la normal, siguiendo el teorema TML
+
+  x_normal <- seq(from = -1.1*n, to = 1.1*n, by = 0.1)
+  y_normal <- dnorm(x_normal, mean = media, sd = desv)
+  
+  # Hacemos la gráfica con ggplo2, para esto, necesitamos tener nuestros
+  # datos como un dataframe
+  data_binomial <- data.frame(x = x_binom,
+                              y = y_binom,
+                              func = "Binomial")
+  data_normal <- data.frame(x = x_normal,
+                            y = y_normal,
+                            func = "Normal")
+  
+  colores <- c("Binomial" = "black", "Normal" = "red")
+  ggplot() +
+    geom_col(data = data_binomial, mapping = aes(x = x, y = y, color = func)) +
+    geom_line(data = data_normal, mapping = aes(x=x, y = y, color = func), lwd = 1) +
+    xlim(media - desv*3, media + 3*desv) +
+    scale_color_manual(values = colores) +
+    labs(color = "Distribución", x = "x", y = "f(x)") +
+    theme(legend.position = "bottom")
+  
+  ggsave(paste0("p3f_n",n,"_p",p,".png"), device = "png", width = 4, height = 4, units = "in", dpi = 400)
+  
+  
+}
+```
+
+
+Utilizamos la función lapply para ejecutar la función para cada elemento de A:
+
+```{r}
+lapply(A, FUN = function(m) binom_y_normal_f(n = m, p = p))
+```
+
+### Inciso b)
+
+Ahora, haremos la función análoga a `binom_y_normal_f` para que grafique ahora la función de distribución para las distribuciones normal y binomial. Para esto necesitamos también la función de distribución de la binomial.
+
+```{r}
+library(ggplot2)
+
+binom_y_normal_F <- function(n,p){
+  media <- n*p
+  desv <- (n*p*(1-p))**0.5
+  
+  # Valores para la función de masa para la binomial
+  x_binom <- c(as.integer(media - 5*desv):as.integer(media + 5*desv))
+  y_binom <- pbinom(x_binom, size = n, prob = p)
+  
+
+  # Para la normal, siguiendo el teorema TML
+
+  x_normal <- seq(from = as.integer(media - 4*desv), to = as.integer(media + 4*desv), by = 0.1)
+  y_normal <- pnorm(x_normal, mean = media, sd = desv)
+  
+  # Hacemos la gráfica con ggplo2, de igual forma los hacemos dataframes para
+  # no batallar.
+  data_binomial <- data.frame(x = x_binom,
+                              y = y_binom,
+                              func = "Binomial")
+  data_normal <- data.frame(x = x_normal,
+                            y = y_normal,
+                            func = "Normal")
+  
+  colors <- c("Normal" = "red", "Binomial" = "black")
+  ggplot() +
+    geom_step(data = data_binomial, mapping = aes(x = x, y = y, color = "Binomial"), direction = "hv") +
+    geom_line(data = data_normal, mapping = aes(x = x, y = y, color = "Normal")) +
+    labs(x = "x", y = "F(x)", color = "Distribución") +
+    xlim(media - 3*desv, media + 3*desv) +
+    scale_color_manual(values = colors) +
+    theme(legend.position = "bottom")
+  ggsave(paste0("p3Ff_n",n,"_p",p,".png"), device = "png", width = 4, height = 4, units = "in", dpi = 400)
+}
+```
+
+Y la ejecutamos a través de todos los elementos de A con la función lapply:
+
+```{r}
+lapply(A, FUN = function(m) binom_y_normal_F(n = m,p = p))
+```
+
+
+### Inciso c)
+
+Hagamos lo mismo cambiando $p$ pero fijando $n = 500$.
+
+```{r}
+binom_y_normal_f(n = 500, p = 0.5)
+binom_y_normal_F(n = 500, p = 0.5)
+binom_y_normal_f(n = 500, p = 0.9)
+binom_y_normal_F(n = 500, p = 0.9)
+```
+
+
+

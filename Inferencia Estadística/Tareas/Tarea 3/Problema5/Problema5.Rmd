@@ -1,0 +1,104 @@
+---
+Title: Problema 5
+author: Gustavo Hernández Angeles
+output: html_document
+---
+
+Primero guardemos los datos sobre los diametros de agave.
+
+```{r}
+d_agave <- c(23.37, 21.87, 24.41, 21.27, 23.33, 15.20, 24.21, 27.52, 15.48, 27.19,
+             25.05, 20.40, 21.05, 28.83, 22.90, 18.00, 17.55, 25.92, 23.64, 28.96,
+             23.02, 17.32, 30.74, 26.73, 17.22, 22.81, 20.78, 23.17, 21.60, 22.37)
+agave <- data.frame(diametro = agave)
+```
+
+### Inciso a) 
+
+Escribimos una función que calcule la función de distribución empírica para un conjunto de datos $D$ en un punto dado $x$. 
+
+```{r}
+funcion_empirica <- function(x, D){
+  if (x %in% D) return (NA) # Discontinuidades
+  n <- length(D)
+  sumatoria <- sum(D <= x) # Sumamos 1 si X_i <= x, 0 de otra forma.
+  
+  return(sumatoria/n)
+}
+```
+
+Ahora, para graficar la función de distribución empírica:
+
+```{r}
+x = seq(from = min(d_agave)-1, to = max(d_agave)+1, by = 0.01)
+y = sapply(x, FUN = function(n) funcion_empirica(n, d_agave))
+datos <- data.frame(x = x, y = y)
+
+# Necesitamos estas columnas por el tipo de plot para generar
+# las discontinuidades.
+datos$xend <- c(datos$x[2:nrow(datos)], NA)
+datos$yend <- datos$y
+library(ggplot2)
+library(latex2exp)
+ggplot(datos) +
+  geom_segment(aes(x = x, y = y,
+               xend = xend, yend = yend), color = "purple") +
+  labs(x = "x", y = TeX(r'($\hat{F}(x)$)', bold = TRUE, italic = TRUE)) +
+  theme(axis.title = element_text(face = "bold"),
+        axis.title.y = element_text(angle = 0, vjust = 0.5),
+        panel.background = element_blank(),
+        panel.border = element_rect(colour="black",fill = NA, size = 1))
+ggsave("problema5_a.png", width = 6, height = 4, dpi = 300)
+
+```
+
+
+
+### Inciso b)
+
+
+Ahora realizamos la función para una gráfica Q-Q normal dado un conjunto de datos cualquiera.
+
+```{r}
+qqnormalplot <- function(D){
+  library(ggplot2)
+  # El input de la función debe ser un dataframe de una sola columna
+  # que contiene a la muestra.
+  # La función devuelve el plot para ser almacenado en una variable.
+  
+  # Obtenemos la media y la desviación estándar muestral.
+  media_muestral <- mean(D[,1])
+  desv_muestral <- sd(D[,1])
+  
+  # Datos para la graficación
+  D[,1] <- sort(D[,1])
+  D$p_i <- c(1:length(D[,1])) / (length(D[,1])+1)
+  D$qnorm <- qnorm(D$p_i)
+  D$teorico <- desv_muestral*D$qnorm + media_muestral
+
+  return (ggplot(D) +
+    # Muestra
+    geom_line(aes(x = qnorm, y = D[,1]), color = "black") +
+    geom_point(aes( x = qnorm, y = D[,1]), color = "black", shape = 1) +
+    # Normal
+    geom_line(aes(x = qnorm, y = teorico), color = "red", linetype = "dashed") +
+    # Parámetros de visualización
+    labs(title = "Gráfica Q-Q Normal", x = "Cuantil teórico", y = "Observaciones") +
+    theme(panel.background = element_blank(),
+          panel.border = element_rect(colour="black",fill = NA, size = 1),
+          plot.title = element_text(hjust = 0.5)))
+}
+```
+
+
+```{r}
+p <- qqnormalplot(agave)
+ggsave("qqnormal.png", plot = p, height = 4, width = 4, dpi = 300)
+```
+
+
+
+
+
+
+
