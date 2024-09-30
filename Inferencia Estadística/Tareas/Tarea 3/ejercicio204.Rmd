@@ -46,10 +46,19 @@ tabla$prob <- pnorm(hasta, mean = 45.47, sd = 58.19**0.5) - pnorm(de, mean = 45.
 Para realizar la comparación entre ambos datos, realizaremos 
 
 ```{r}
+tabla2 <- data.frame(prob = tabla$frec_relativa / 100, punto_medio = tabla$punto_medio, fun = "Frecuencias")
+tabla3 <- data.frame(prob = tabla$prob, punto_medio = tabla$punto_medio, fun = "Normal")
+df <- rbind(tabla2,tabla3)
+rm(tabla2,tabla3)
 
-ggplot(tabla, aes(x = punto_medio)) +
-  geom_col(aes(y = prob)) +
-  geom_col(aes(y = frec_relativa/100))
+ggplot(data = df) +
+  geom_col(aes(x = punto_medio, y = prob, fill = fun), position = "dodge", width = 0.9) +
+  scale_fill_manual(values = c("black","red")) +
+  labs(x = "x", y = NULL, fill = NULL) +
+  theme(legend.position = c(0.8,0.9), legend.background = element_blank(),
+        legend.key.size = unit(0.2, "in"), legend.text = element_text(size = 8))
+
+ggsave("ejercicio204.png", dpi = 300, width = 4, height = 3, units = "in")
 ```
 
 
