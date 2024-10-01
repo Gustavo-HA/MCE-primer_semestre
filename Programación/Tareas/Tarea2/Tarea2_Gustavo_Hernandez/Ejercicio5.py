@@ -27,7 +27,7 @@ def subcadenas_palindromicas(cadena):
 
 #Inputs
 cadena = input()
-
+cadena = "anitalavalatina"*10**4
 
 #Output
 print("Output:")

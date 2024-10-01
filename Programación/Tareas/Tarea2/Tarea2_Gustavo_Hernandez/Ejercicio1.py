@@ -15,6 +15,8 @@ n = int(input())
 lista = input().split(" ")
 lista = [int(x) for x in lista]
 
+lista = [x for x in range(1,10**6 +1) if x != 10**5]
+n = len(lista)
 # Imprimimos el resultado
 print("Output:")
 print(numero_faltante(n, lista))
