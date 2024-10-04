@@ -84,8 +84,8 @@ p_weibull <- pweibull(media_we + k*desv_we, shape = b, scale = 1/a)
 #Para Lognormal(mu=3, sigma = 2)
 mu <- 3
 sigma <- 2
-media_log <- exp(2*mu + 2*sigma**2)
-desv_log <- exp(2*mu + sigma**2)*(exp(sigma**2)-1)
+media_log <- exp(mu + sigma**2 / 2)
+desv_log <- (exp(2*mu + sigma**2)*(exp(sigma**2)-1))**0.5
 p_log <- plnorm(media_log + k*desv_log, meanlog = mu, sdlog = sigma) -
   plnorm(media_log - k*desv_log, meanlog = mu, sdlog = sigma)
 
@@ -106,4 +106,102 @@ tabla <- data.frame(k = intervalos,
                     "Weibull(4,1)" = p_weibull,
                     "Lognormal(3,2)" = p_log)
 ```
+
+### Inciso 2
+
+Generamos $n$ datos para cada distribución con la función para generar datos correspondientes a una distribución implementada en R.
+
+```{r}
+n <- 1000
+
+sacar_proporciones <- function(datos, k){
+  mu <- mean(datos)
+  s <- sd(datos)
+  n_datos_dentro <- length(datos[datos > mu - k*s & datos < mu + k*s])
+  proporcion <- n_datos_dentro / length(datos)
+  return(proporcion)
+}
+
+# Para Unif(a = -3, b = 3)
+a <- -3
+b <- 3
+d1 <- runif(n,a,b)
+prop1 <- sapply(k, function(n) sacar_proporciones(d1,n))
+
+
+# Para Normal(0,1)
+media_nor <- 0
+desv_nor <- 1
+d2 <- rnorm(n)
+prop2 <- sapply(k, function(n) sacar_proporciones(d2,n))
+
+
+
+
+# Para Exponencial(2), theta = 2
+theta <- 2
+d3 <- rexp(n, 1/theta)
+prop3 <- sapply(k, function(n) sacar_proporciones(d2,n))
+
+
+
+
+# Para Gamma(a = 2, b = 1)
+a <- 2
+b <- 1
+d4 <- rgamma(n, shape = a, scale = b)
+prop4 <- sapply(k, function(n) sacar_proporciones(d4,n))
+
+
+
+
+
+# Para Gamma(a = 3, b = 1)
+a <- 3
+b <- 1
+d5 <- rgamma(n, shape = a, scale = b)
+prop5 <- sapply(k, function(n) sacar_proporciones(d5,n))
+
+
+
+
+
+# Para Beta(a = 2, b= 2)
+a <- 2
+b <- 2
+d6 <- rbeta(n, shape1 = a, shape2 = b)
+prop6 <- sapply(k, function(n) sacar_proporciones(d6,n))
+
+
+
+# Para Weibull(a=4,b=1)
+a <- 4
+b <- 1
+d7 <- rweibull(n, shape = b, scale = 1/a)
+prop7 <- sapply(k, function(n) sacar_proporciones(d7,n))
+
+
+#Para Lognormal(mu=3, sigma = 2)
+mu <- 3
+sigma <- 2
+d8 <- rlnorm(n, meanlog = mu, sdlog = sigma)
+prop8 <- sapply(k, function(n) sacar_proporciones(d8,n))
+```
+
+
+Para visualizar la tabla, lo haremos mediante un dataframe, similar al inciso anterior.
+
+```{r}
+tabla2 <- data.frame(k = intervalos,
+                    "Unif(-3,3)" = prop1,
+                    "Normal(0,1)" = prop2,
+                    "Exp(2)" = prop3,
+                    "Gamma(2,1)" = prop4,
+                    "Gamma(3,1)" = prop5,
+                    "Beta(2,2)" = prop6,
+                    "Weibull(4,1)" = prop7,
+                    "Lognormal(3,2)" = prop8)
+```
+
+
 
