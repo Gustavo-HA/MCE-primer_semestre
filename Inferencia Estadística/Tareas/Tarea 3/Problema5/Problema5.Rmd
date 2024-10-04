@@ -202,18 +202,26 @@ qqnormalplot <- function(D, banda = NULL){
   D$p_i <- c(1:length(D[,1])) / (length(D[,1])+1)
   D$z_i <- qnorm(D$p_i)
   D$teorico <- desv_muestral*D$z_i + media_muestral
+  
+  if (!is.null(banda)){
+    titulo <- TeX(paste0(r"(Gráfica Q-Q Normal : $1-\alpha =$)",banda))
+  }else{
+    titulo <- "Gráfica Q-Q Normal"
+  }
+  
 
   p <- ggplot(D) +
     # Muestra
-    geom_line(aes(x = z_i, y = D[,1]), color = "black") +
+    geom_line(aes(x = z_i, y = D[,1], color = "Muestra")) +
     geom_point(aes( x = z_i, y = D[,1]), color = "black", shape = 1) +
     # Normal
     geom_line(aes(x = z_i, y = teorico), color = "red", linetype = "dashed") +
     # Parámetros de visualización
-    labs(title = TeX(paste0(r"(Gráfica Q-Q Normal con $1-\alpha =$)",banda)), x = "Cuantil teórico", y = "Observaciones") +
+    labs(title = titulo, x = "Cuantil teórico", y = "Observaciones", color = "Datos") +
     theme(panel.background = element_blank(),
           panel.border = element_rect(colour="black",fill = NA, linewidth = 1),
-          plot.title = element_text(hjust = 0.5))
+          plot.title = element_text(hjust = 0.5), legend.position = c(0.27,0.84),
+          legend.background = element_rect(fill = "transparent"))
   
   if (!is.null(banda)){
     alfa <- 1 - banda
@@ -236,10 +244,13 @@ qqnormalplot <- function(D, banda = NULL){
     D$bandasuperior <- desv_muestral * D$bandasuperior + media_muestral
     
     p <- p +
-      geom_line(data = D, mapping = aes(x = z_i, y = bandasuperior), color = "blue", linetype = "dashed") +
-      geom_line(data = D, mapping = aes(x = z_i, y = bandainferior), color = "blue", linetype = "dashed")
-    
+      geom_line(data = D, mapping = aes(x = z_i, y = bandasuperior, color = "Bandas de confianza"), linetype = "dashed") +
+      geom_line(data = D, mapping = aes(x = z_i, y = bandainferior, color = "Bandas de confianza"), linetype = "dashed")
   }
+  
+  p <- p + 
+    scale_color_manual(values = c("Muestra" = "black", "Bandas de confianza" = "blue"))
+    
   
   
   return(p)
