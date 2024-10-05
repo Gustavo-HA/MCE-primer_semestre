@@ -48,7 +48,7 @@ graficar_fd <- function(D){
     theme(axis.title = element_text(face = "bold"),
           axis.title.y = element_text( vjust = 0.5),
           panel.background = element_blank(),
-          panel.border = element_rect(colour="black",fill = NA, size = 1))
+          panel.border = element_rect(colour="black",fill = NA, linewidth = 1))
   return(p)
 }
 ```
@@ -81,15 +81,15 @@ qqnormalplot <- function(D){
   # Datos para la graficación
   D[,1] <- sort(D[,1])
   D$p_i <- c(1:length(D[,1])) / (length(D[,1])+1)
-  D$qnorm <- qnorm(D$p_i)
-  D$teorico <- desv_muestral*D$qnorm + media_muestral
+  D$z_i <- qnorm(D$p_i)
+  D$teorico <- desv_muestral*D$z_i + media_muestral
 
   p <- ggplot(D) +
     # Muestra
-    geom_line(aes(x = qnorm, y = D[,1]), color = "black") +
-    geom_point(aes( x = qnorm, y = D[,1]), color = "black", shape = 1) +
+    geom_line(aes(x = z_i, y = D[,1]), color = "black") +
+    geom_point(aes( x = z_i, y = D[,1]), color = "black", shape = 1) +
     # Normal
-    geom_line(aes(x = qnorm, y = teorico), color = "red", linetype = "dashed") +
+    geom_line(aes(x = z_i, y = teorico), color = "red", linetype = "dashed") +
     # Parámetros de visualización
     labs(title = "Gráfica Q-Q Normal", x = "Cuantil teórico", y = "Observaciones") +
     theme(panel.background = element_blank(),
@@ -126,59 +126,62 @@ graficar_fd <- function(D, banda = NULL){
   datos$yend <- datos$y
   library(ggplot2)
   library(latex2exp)
+  
   p <- ggplot(datos) +
     geom_segment(aes(x = x, y = y,
-                 xend = xend, yend = yend), color = "black") +
-    labs(x = "x", y = TeX(r'($\hat{F}(x)$)', bold = TRUE, italic = TRUE)) +
-    theme(axis.title = element_text(face = "bold"),
-          axis.title.y = element_text(vjust = 0.5),
-          panel.background = element_blank(),
-          panel.border = element_rect(colour="black",fill = NA, size = 1))
+                 xend = xend, yend = yend), color = "black")
   
   if (!is.null(banda)){
     alpha <- round(1 - banda,2)
     n <- length(D)
-    if (alpha == 0.10){cc <- 1}
-    if (alpha == 0.05){cc <- 2}
-    if (alpha == 0.01){cc <- 3}
     
-    # Tabla del valor c para la distribución normal
-    valores_c <- c(0.819, 0.895, 1.035)
-    cc <- valores_c[cc]
-    k <- sqrt(n) - 0.01 + 0.85/sqrt(n)
+    # epsilon_0
+    e_0 = sqrt((log(2/alpha))/(2*n))
     
-    # Valor crítico D
-    d_n <- cc/k
 
-    # Para la banda superior. d_n se suma hasta que topa con el valor 1. +
-    y_bandasuperior <- y + d_n
+    # Para la banda superior. 
+    y_bandasuperior <- y + e_0
     y_bandasuperior[y_bandasuperior > 1] <- 1
-    y_bandasuperior <- y_bandasuperior[!is.na(y_bandasuperior)]
     
-    # Para la banda inferior. d_n se suma a partir de que F(x) > d_n.
-    y_bandainferior <- y - d_n
+    # Para la banda inferior.
+    y_bandainferior <- y - e_0
     y_bandainferior[y_bandainferior < 0 ] <- 0
-    y_bandainferior <- y_bandainferior[!is.na(y_bandainferior)]
     
-    x_bandas <- x[which(!is.na(y))]
+    datos_bandas <- data.frame(x_bandas = x, y_bandainferior = y_bandainferior, y_bandasuperior = y_bandasuperior)
     
-    datos_bandas <- data.frame(x_bandas = x_bandas, y_bandainferior = y_bandainferior, y_bandasuperior = y_bandasuperior)
-    
+    # Leyenda 1-alfa
+    leyenda <- paste0("1 - a = ", banda)
     # Agregamos las bandas al grafico mediante geom_line.
-    p <- p + geom_line(data = datos_bandas, aes(x = x_bandas, y = y_bandasuperior), color = "blue", linewidth = 0.2) +
-      geom_line(data = datos_bandas, aes(x = x_bandas, y = y_bandainferior), color = "blue", linewidth = 0.2) +
-      geom_ribbon(data = datos_bandas, aes(x = x_bandas, ymin = y_bandainferior, ymax = y_bandasuperior), alpha = 0.1)
+    p <- p + geom_line(data = datos_bandas, aes(x = x, y = y_bandasuperior, color = leyenda), linetype = "dotted") +
+      geom_line(data = datos_bandas, aes(x = x, y = y_bandainferior, color = leyenda), linetype = "dotted") +
+      scale_color_manual(values = c("blue","black"))
   }
+  
+  p <- p +
+    labs(x = "x", y = TeX(r'($\hat{F}(x)$)', bold = TRUE, italic = TRUE), color = "Datos") +
+    theme(axis.title = element_text(face = "bold"),
+          axis.title.y = element_text(vjust = 0.5),
+          panel.background = element_blank(),
+          panel.border = element_rect(colour="black",fill = NA, size = 1),
+          legend.position = "inside",
+          legend.position.inside = c(0.05,0.95),
+          legend.justification = c(0,1))
   return(p)
 }
 ```
 
 
-Probamos con $1-alpha = 0.95$
+Probamos con varios $\alpha$:
 
 ```{r}
 grafica_fd <- graficar_fd(d_agave, banda = 0.95)
-ggsave("problema5_c_1.png", plot = grafica_fd, width = 4, height = 4, dpi = 300)
+ggsave("problema5_c_1_0.95.png", plot = grafica_fd, width = 4, height = 4, dpi = 300)
+
+grafica_fd <- graficar_fd(d_agave, banda = 0.90)
+ggsave("problema5_c_1_0.90.png", plot = grafica_fd, width = 4, height = 4, dpi = 300)
+
+grafica_fd <- graficar_fd(d_agave, banda = 0.99)
+ggsave("problema5_c_1_0.99.png", plot = grafica_fd, width = 4, height = 4, dpi = 300)
 ```
 
 
@@ -202,13 +205,6 @@ qqnormalplot <- function(D, banda = NULL){
   D$p_i <- c(1:length(D[,1])) / (length(D[,1])+1)
   D$z_i <- qnorm(D$p_i)
   D$teorico <- desv_muestral*D$z_i + media_muestral
-  
-  if (!is.null(banda)){
-    titulo <- TeX(paste0(r"(Gráfica Q-Q Normal : $1-\alpha =$)",banda))
-  }else{
-    titulo <- "Gráfica Q-Q Normal"
-  }
-  
 
   p <- ggplot(D) +
     # Muestra
@@ -217,11 +213,15 @@ qqnormalplot <- function(D, banda = NULL){
     # Normal
     geom_line(aes(x = z_i, y = teorico), color = "red", linetype = "dashed") +
     # Parámetros de visualización
-    labs(title = titulo, x = "Cuantil teórico", y = "Observaciones", color = "Datos") +
+    labs(title = "Gráfica Q-Q Normal",x = "Cuantil teórico", y = "Observaciones", color = "Datos") +
     theme(panel.background = element_blank(),
           panel.border = element_rect(colour="black",fill = NA, linewidth = 1),
-          plot.title = element_text(hjust = 0.5), legend.position = c(0.27,0.84),
-          legend.background = element_rect(fill = "transparent"))
+          plot.title = element_text(hjust = 0.5),
+          legend.position = "inside",
+          legend.position.inside = c(0.05,0.95),
+          legend.justification = c(0,1))
+  
+  colores <- c("black")
   
   if (!is.null(banda)){
     alfa <- 1 - banda
@@ -243,21 +243,24 @@ qqnormalplot <- function(D, banda = NULL){
     D$bandainferior <- desv_muestral * D$bandainferior + media_muestral
     D$bandasuperior <- desv_muestral * D$bandasuperior + media_muestral
     
+    leyenda <- paste0("1 - a = ", banda)
+    
     p <- p +
-      geom_line(data = D, mapping = aes(x = z_i, y = bandasuperior, color = "Bandas de confianza"), linetype = "dashed") +
-      geom_line(data = D, mapping = aes(x = z_i, y = bandainferior, color = "Bandas de confianza"), linetype = "dashed")
+      geom_line(data = D, mapping = aes(x = z_i, y = bandasuperior, color = leyenda), linetype = "dashed") +
+      geom_line(data = D, mapping = aes(x = z_i, y = bandainferior, color = leyenda), linetype = "dashed")
+    
+    colores <- c("blue","black")
   }
   
   p <- p + 
-    scale_color_manual(values = c("Muestra" = "black", "Bandas de confianza" = "blue"))
-    
+    scale_color_manual(values = colores )
   
   
   return(p)
 }
 ```
 
-Probamos con $1-\alpha = 0.5$:
+Probamos con varios $\alpha$:
 
 ```{r}
 p <- qqnormalplot(agave, 0.99)
@@ -272,6 +275,33 @@ ggsave("qqnormal_bandas95.png", plot = p, height = 4, width = 4, dpi = 300)
 ```
 
 
+### Inciso d)
+
+La información para el proceso de la gráfica se sacó de https://en.wikipedia.org/wiki/Normal_probability_plot.
+
+```{r}
+normal_prob_plot <- function(D){
+  #Ordenamos
+  D[,1] <- sort(D[,1])
+  colnames(D)[1] <- "datos"
+  
+  
+  n <- length(D[,1])
+  if (n > 10) a <- 0.5 else a <- 3/8
+  
+  D$orden <- c(1:n)
+  D$z_i <- (D$orden-a)/(n+1-2*a)
+  D$z_i <- qnorm(D$z_i, mean = mean(D[,1]), sd = sd(D[,1]))
+  
+  library(ggplot2)
+  
+  ggplot(data = D) +
+    geom_line(aes(x = z_i, y = datos)) +
+    geom_line(aes(x = z_i, y = z_i))
+}
+
+normal_prob_plot(agave)
+```
 
 
 
