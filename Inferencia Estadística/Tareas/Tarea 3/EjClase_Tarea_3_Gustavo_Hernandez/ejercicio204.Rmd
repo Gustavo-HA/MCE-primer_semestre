@@ -29,6 +29,8 @@ ggplot(datos = tabla) +
   # Por alguna razón, ocurre un error si intento usar la columna punto_medio que creé x.x
   geom_col(aes(x = (de + hasta)/2, y = frecuencia), color = "black") +
   labs(x = "Intervalos", y = "Frecuencia", title = "Histograma de los intervalos")
+
+ggsave("e204_a.png",width = 4, height = 3, units = "in")
 ```
 
 ### Inciso b)
@@ -52,13 +54,13 @@ df <- rbind(tabla2,tabla3)
 rm(tabla2,tabla3)
 
 ggplot(data = df) +
-  geom_col(aes(x = punto_medio, y = prob, fill = fun), position = "dodge", width = 0.9) +
+  geom_col(aes(x = punto_medio, y = prob, fill = fun), position = "dodge", width = 1) +
   scale_fill_manual(values = c("black","red")) +
   labs(x = "x", y = NULL, fill = NULL) +
   theme(legend.position = c(0.8,0.9), legend.background = element_blank(),
         legend.key.size = unit(0.2, "in"), legend.text = element_text(size = 8))
 
-ggsave("ejercicio204.png", dpi = 300, width = 4, height = 3, units = "in")
+ggsave("e204_c.png", dpi = 300, width = 4, height = 3, units = "in")
 ```
 
 
