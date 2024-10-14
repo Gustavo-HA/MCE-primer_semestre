@@ -1,0 +1,65 @@
+---
+title: "Parcial 1 - Problema 5"
+subtitle: "Inferencia Estadística"
+author: "Gustavo Hernández Angeles"
+output: pdf_document
+date: "2024-10-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 1. Encuentre p(10) con el uso de la distribución de probabilidad hipergeométrica.
+
+Comenzamos definiendo el tamaño del lote, el número de aparatos defectuosos, el número de aparatos funcionales y el tamaño de la muestra.
+
+```{r}
+n_lote <- 400
+n_defectuosos <- 160
+n_funcionales <- n_lote - n_defectuosos
+muestra <- 20
+```
+
+Usando la distribución hipergeométrica, implementada en ´´R´´.
+
+```{r}
+# X que queremos saber p(x)
+x <- 10
+p_hiper <- dhyper(x, n_funcionales, n_defectuosos, muestra)
+sprintf("El valor de p(10) utilizando la distribución hipergeométrica: %.6f", p_hiper)
+```
+
+### 2. Encuentra p(10) usando la distribución de probabilidad binomial.
+
+
+Usando la distribucion de probabilidad binomial.
+
+```{r}
+x <- 10
+
+# Calculamos la proporcion de aparatos funcionales, esta será la probabilidad
+# que utilizaremos en la distribucion binomial
+p <- n_funcionales/n_lote
+
+p_binom <- dbinom(x, muestra, prob = p)
+sprintf("El valor de p(10) utilizando la distribución binomial: %.6f", p_binom)
+
+```
+### 3. ¿Es N suficientemente grande para que el valor p(10) obtenido de la distribución binomial sea una buena aproximación de la obtenida usando la distribución hipergeométrica?
+
+Primero, calcularemos el error relativo que tiene la probabilidad calculada por la distribución binomial con respecto a la distribución hipergeométrica:
+
+```{r}
+error <- abs(p_binom - p_hiper)/p_hiper * 100
+sprintf("El error es del %.4f%%",error)
+```
+Por lo que podemos decir que se aproxima con muy buena precisión la probabilidad $p(10)$ utilizando la distribución binomial. Además, podemos rescatar de las notas de clase que, teniendo una proporción $n/N$ menor al 10%, se obtiene una buena aproximación de la distribución hipergeométrica a través de la distribución binomial. En este caso,
+
+```{r}
+proporcion <- muestra/n_lote
+sprintf("La proporción n/N es del %.2f%%",proporcion*100)
+```
+Dadas las condiciones de nuestro problema, podemos afirmar que los valores obtenidoos de la distribución binomial son una buena aproximación de los valores obtenidos de la distribución hipergeométrica.
+
+
