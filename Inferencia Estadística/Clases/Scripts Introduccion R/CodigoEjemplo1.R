@@ -86,7 +86,6 @@ worms <- read.csv("worms.csv",header=T,row.names=1)
 attach(worms)
 names(worms)
 summary(worms)
-str(worms)
 
 ## Subseleccion
 worms[,1:3]
@@ -99,10 +98,7 @@ worms[Area>3 & Slope <3 , ]
 
 worms[2:11,][worms[1:10,][,"Slope"]< 3 & worms[1:10,][,"Area"] > 3,]
 
-
-
-             ## Ordenamiento de elementos
-
+## Ordenamiento de elementos
 worms[order(worms[,1]),c(1:6)]
 worms[order(worms[,1]), c("Area", "Slope", "Vegetation", "Soil.pH",  "Damp", "Worm.density")]
 
@@ -116,7 +112,7 @@ sum(x<5)
 
 sum(x[x<5])
 
-## Suma de los tres valores m?s grandes
+## Suma de los tres valores más grandes
 y <- c(8,3,5,7,6,6,8,9,2,3,9,4,10,4,11)
 sort(y)
 rev(sort(y))
@@ -398,7 +394,7 @@ t.test(x,y)
 t.test(x,y,paired=T)
 
 
-## Teorema del l?mite central
+## Teorema del límite central
 par(mfrow=c(1,2))
 y<-rnbinom(1000,1,.2)
 
