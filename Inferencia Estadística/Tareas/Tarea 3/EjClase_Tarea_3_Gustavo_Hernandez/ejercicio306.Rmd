@@ -83,8 +83,8 @@ ggplot(datos, aes(x = x)) +
         panel.border = element_rect(colour="black",fill = NA, linewidth = 1),
         plot.title = element_text(hjust = 0.5),
         legend.position = "inside",
-        legend.position.inside = c(0.95,0.05),
-        legend.justification = c(1,0),
+        legend.position.inside = c(0.95,0.95),
+        legend.justification = c(1,1),
         legend.background = element_rect(fill = NA))
 
 ggsave("e306_2_confiabilidad.png", width = 5, height = 4)
