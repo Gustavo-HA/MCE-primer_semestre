@@ -1,0 +1,161 @@
+## Problema 4
+En este ejercicio repasará la estimación de densidades.  
+
+* Escriba una función en ``R`` que estime una densidad por el método de kerneles. La función deberá recibir al punto $x$ donde se evalúa al estimador, al parámetro de suavidad $h$, al kernel que se utilizará en la estimación y al conjunto de datos.
+
+* Cargue en ``R`` al archivo "Tratamiento.csv", el cual contiene la duración de los periodos de tratamiento (en días) de los pacientes de control de un estudio de suicidio. Utilice la función del inciso anterior para estimar la densidad del conjunto de datos para $h = 20,30, 60$. Grafique las densidades estimadas. ¿Cuál es el mejor valor para $h$? Argumente.
+
+* En el contexto de la estimación de densidades, escriba una función en ``R`` que determine el ancho de banda que optimiza el ISE. Grafique la densidad con ancho de banda óptimo para el conjunto de datos de "Tratamiento.csv".
+
+### Inciso a)
+Realizaremos la función que estime la densidad mediante kerneles.
+```{r}
+kde <- function(x, h, kernel, dataset) {
+    x_i <- dataset[, 1]
+    n <- length(x_i)
+
+    factor <- 1 / (n * h)
+    u <- (x - x_i) / h
+
+    # En algunas funciones necesitamos que ||u|| <= 1
+    u_acotada <- pmax(pmin(u, 1), -1)
+
+    if (kernel == "gaussian") {
+        suma <- factor * sum(dnorm(u))
+    } else if (kernel == "epanechnikov") {
+        suma <- factor * sum((3 / 4) * (1 - u_acotada**2))
+    } else if (kernel == "triangular") {
+        suma <- factor * sum(1 - abs(u_acotada))
+    } else if (kernel == "uniform") {
+        # Para que no sume todos hacemos que no tome los extremos.
+        suma <- factor * sum(dunif(u_acotada, min = -0.99, max = 0.99))
+    } else if (kernel == "biweight") {
+        suma <- factor * sum((15 / 16) * (1 - u_acotada**2)**2)
+    }
+
+    return(suma)
+}
+```
+
+### Inciso b)
+
+Primero cargamos los datos del problema.
+```{r}
+library(readr)
+
+datos <- read.csv2("./Tareas/Tarea 4/datasets/Tratamiento.csv", header = FALSE)
+names(datos) <- "x"
+```
+
+Para realizar las graficas utilizamos ggplot y la función que creamos en el inciso anterior. Primero preparamos los datos para la graficación.
+
+```{r}
+library(ggplot2)
+
+x_graficar <- seq(from = min(datos$x) - 1, to = max(datos$x) + 1, by = 0.1)
+kernel <- "epanechnikov"
+
+estimacion_20 <- sapply(x_graficar, function(k) kde(k, h = 20, kernel, dataset = datos))
+estimacion_30 <- sapply(x_graficar, function(k) kde(k, h = 30, kernel, dataset = datos))
+estimacion_60 <- sapply(x_graficar, function(k) kde(k, h = 60, kernel, dataset = datos))
+
+grafica_df <- data.frame(
+    x_graficar = x_graficar, estimacion_20 = estimacion_20,
+    estimacion_30 = estimacion_30, estimacion_60 = estimacion_60
+)
+```
+
+```{r message = FALSE}
+# Este bloque de código es para ver las graficas con el navegador,
+# no es parte del problema y su proposito es solo el desarrollo de las graficas.
+# library(httpgd)
+# hgd()
+```
+
+Ahora los graficamos con geom_lines.
+
+```{r}
+ggplot(data = grafica_df) +
+    geom_line(aes(x = x_graficar, y = estimacion_20, color = "h = 20")) +
+    geom_line(aes(x = x_graficar, y = estimacion_30, color = "h = 30")) +
+    geom_line(aes(x = x_graficar, y = estimacion_60, color = "h = 60")) +
+    scale_color_manual(values = c("black", "blue", "red")) +
+    labs(y = NULL, x = "x", color = NULL) +
+    theme(
+        panel.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA, linewidth = 1),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "inside",
+        legend.position.inside = c(0.95, 0.95),
+        legend.justification = c(1, 1)
+    )
+
+# Guardamos el plot
+ggsave("./Tareas/Tarea 4/figuras/problema4_b_epale.png", height = 4, width = 4, dpi = 400)
+```
+
+
+### Inciso c)
+
+Para calcular la integral $\int \hat{f}^2$ utilizaremos la función integrate de R. Primero necesitamos que nuestra función sea vectorizada, la vectorizacion se puede simular aplicando la función vectorize() a nuestra función al cuadrado, para posteriormente integrar con integrate.
+
+```{r}
+vec_kde_squared <- Vectorize(function(k, h, kernel) kde(x = k, h = h, kernel = kernel, dataset = datos)**2)
+```
+
+#### Se determina $M_o(h)$ para cada $h$.  
+Primero obtendremos el primer termino, el cual es una integral desde -Inf a Inf de nuestra estimación de la densidad al cuadrado. 
+
+```{r}
+h <- seq(from = 1, to = 80, by = 0.25)
+kernel <- "epanechnikov"
+
+# Se realiza la integral para cada valor de h
+# que aparece en la secuencia.
+integral <- sapply(h, function(h) integrate(function(k) vec_kde_squared(k, h, kernel), -Inf, Inf, subdivisions = 1000))
+primer_termino_h <- unlist(integral["value", ])
+```
+
+```{r}
+# Ahora para el segundo termino, haremos una funcion que lo calcule para cada valor de h
+# y podremos cambiar el kernel al que querramos
+
+segundo_termino <- function(h, kernel, dataset) {
+    x <- dataset[, 1]
+    n <- length(dataset[, 1])
+    idx <- c(1:n)
+    suma <- 0
+
+    for (i in idx) {
+        df_auxiliar <- data.frame(x = dataset[-i, 1])
+        suma <- suma + kde(x[i], h, kernel, df_auxiliar)
+    }
+
+    resultado <- (2 / n) * suma
+    return(resultado)
+}
+
+segundo_termino_h <- sapply(h, function(h) segundo_termino(h, kernel, datos))
+```
+
+M_o finalmente
+
+```{r}
+M <- primer_termino_h - segundo_termino_h
+```
+
+Graficamos con ggplot2
+
+```{r}
+df_h <- data.frame(h = h, M = M)
+
+ggplot(data = df_h) +
+    geom_line(aes(x = h, y = M))
+```
+
+Podemos encontrar el valor de $h$ que minimiza $M_0$ con ayuda de R.
+
+```{r}
+min_M <- min(df_h[, "M"])
+h_o <- df_h[df_h$M == min_M, ][1, 1]
+```
