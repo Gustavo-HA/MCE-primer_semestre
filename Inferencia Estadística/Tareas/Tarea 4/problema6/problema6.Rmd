@@ -32,6 +32,7 @@ min_cuadrados <- function(x, y, dataset) {
   # .            y  =  m * x  +  b
   # Toma como entrada los nombres de las columnas X y Y, además del
   # dataset de donde se toman.
+  # Regresa los valores m y b en un array de dos elementos.
 
   xx <- dataset[, x]
   yy <- dataset[, y]
@@ -54,7 +55,11 @@ sprintf("y = %.2fx + %.2f", m, b)
 
 Realizamos la grafica de los datos junto a la regresión.
 ```{r}
-x_ls <- seq(from = min(df[, "Maiz"]) * 0.9, to = max(df[, "Maiz"]) * 1.1, by = 0.25)
+x_ls <- seq(
+  from = min(df[, "Maiz"]) * 0.9,
+  to = max(df[, "Maiz"]) * 1.1,
+  by = 0.25
+)
 y_ls <- m * x_ls + b
 
 p_ls_reg <- ggplot() +
