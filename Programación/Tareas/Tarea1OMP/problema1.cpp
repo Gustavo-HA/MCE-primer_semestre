@@ -1,5 +1,4 @@
 #include <iostream>
-#include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
 
@@ -15,8 +14,8 @@ int main()
 
     A = (double *)malloc(N * sizeof(double));
 
-    // Leemos el vector A
-    cout << "Vector A:\n";
+    // Leemos el vector
+    cout << "Vector:\n";
     for (i = 0; i < N; i++)
     {
         cin >> A[i];

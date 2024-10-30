@@ -5,25 +5,25 @@
 
 using namespace std;
 
-void leer(float *A, long int N, long int M);
-void mostrar(float *A, long int N, long int M);
-void incisoA(float *A, float *B, float *C, long int N, long int M);
-void incisoB(float *A, float *B, float *C, float a, long int N, long int M);
+void leer(unsigned int *A, long int N, long int M);
+void mostrar(unsigned int *A, long int N, long int M);
+void incisoA(unsigned int *A, unsigned int *B, unsigned int *C, long int N, long int M);
+void incisoB(unsigned int *A, unsigned int *B, unsigned int *C, float a, long int N, long int M);
 
 int main()
 {
     long int N, M;
-    float *A, *B, *C1, *C2;
+    unsigned int *A, *B, *C1, *C2;
     float a;
 
     cout << "N x M: ";
     cin >> N;
     cin >> M;
 
-    A = (float *)malloc(N * M * sizeof(float));
-    B = (float *)malloc(N * M * sizeof(float));
-    C1 = (float *)malloc(N * M * sizeof(float));
-    C2 = (float *)malloc(N * M * sizeof(float));
+    A = (unsigned int *)malloc(N * M * sizeof(unsigned int));
+    B = (unsigned int *)malloc(N * M * sizeof(unsigned int));
+    C1 = (unsigned int *)malloc(N * M * sizeof(unsigned int));
+    C2 = (unsigned int *)malloc(N * M * sizeof(unsigned int));
 
     cout << "Matriz A:\n";
     leer(A, N, M);
@@ -45,7 +45,7 @@ int main()
     mostrar(C2, N, M);
 }
 
-void leer(float *A, long int N, long int M)
+void leer(unsigned int *A, long int N, long int M)
 {
     long int i;
     for (i = 0; i < N * M; i++)
@@ -54,7 +54,7 @@ void leer(float *A, long int N, long int M)
     }
 }
 
-void mostrar(float *A, long int N, long int M)
+void mostrar(unsigned int *A, long int N, long int M)
 {
     long int i;
     for (i = 0; i < N * M; i++)
@@ -66,7 +66,7 @@ void mostrar(float *A, long int N, long int M)
     cout << endl;
 }
 
-void incisoA(float *A, float *B, float *C, long int N, long int M)
+void incisoA(unsigned int *A, unsigned int *B, unsigned int *C, long int N, long int M)
 {
     long int i, j, idx, idx_b;
 
@@ -82,7 +82,7 @@ void incisoA(float *A, float *B, float *C, long int N, long int M)
     }
 }
 
-void incisoB(float *A, float *B, float *C, float a, long int N, long int M)
+void incisoB(unsigned int *A, unsigned int *B, unsigned int *C, float a, long int N, long int M)
 {
     long int i, j, idx;
 
