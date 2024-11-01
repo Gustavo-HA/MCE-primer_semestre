@@ -21,13 +21,24 @@ int main()
         cin >> A[i];
     }
 
-#pragma omp parallel for shared(A, N) private(i) reduction(+ : suma)
+    // Código en paralelo
+    #pragma omp parallel for shared(A, N) private(i) reduction(+ : suma)
     for (i = 0; i < N; i++)
     {
         suma += A[i];
     }
 
-    cout << "Resultado:\n"
+    cout << "Resultado en paralelo:\n"
+         << suma << endl;
+
+    // Código secuencial
+    suma = 0;
+    for (i = 0; i < N; i++)
+    {
+        suma += A[i];
+    }
+
+    cout << "Resultado en secuencial:\n"
          << suma << endl;
 
     free(A);

@@ -5,7 +5,7 @@ using namespace std;
 
 int main()
 {
-    long int N = 100;
+    long int N = 4;
     int tid;
 
 #pragma omp parallel for shared(N) private(tid)
@@ -15,6 +15,8 @@ int main()
 #pragma omp critical
         cout << "Soy la iteracion i =\t" << i << "\ten el hilo tid =\t" << tid << endl;
     }
+
+    cout << "Cantidad de hilos utilizados: " << omp_get_max_threads() << endl;
 
     return 0;
 }

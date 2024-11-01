@@ -6,14 +6,19 @@
 using namespace std;
 
 void leer(unsigned int *A, long int N, long int M);
-void mostrar(unsigned int *A, long int N, long int M);
-void incisoA(unsigned int *A, unsigned int *B, unsigned int *C, long int N, long int M);
-void incisoB(unsigned int *A, unsigned int *B, unsigned int *C, float a, long int N, long int M);
+void mostrar(float *A, long int N, long int M);
+
+void incisoA_paralelo(unsigned int *A, unsigned int *B, float *C, long int N, long int M);
+void incisoA_secuencial(unsigned int *A, unsigned int *B, float *C, long int N, long int M);
+
+void incisoB_paralelo(unsigned int *A, unsigned int *B, float *C, float a, long int N, long int M);
+void incisoB_secuencial(unsigned int *A, unsigned int *B, float *C, float a, long int N, long int M);
 
 int main()
 {
     long int N, M;
-    unsigned int *A, *B, *C1, *C2;
+    unsigned int *A, *B;
+    float *C1, *C2;
     float a;
 
     cout << "N x M: ";
@@ -22,8 +27,8 @@ int main()
 
     A = (unsigned int *)malloc(N * M * sizeof(unsigned int));
     B = (unsigned int *)malloc(N * M * sizeof(unsigned int));
-    C1 = (unsigned int *)malloc(N * M * sizeof(unsigned int));
-    C2 = (unsigned int *)malloc(N * M * sizeof(unsigned int));
+    C1 = (float *)malloc(N * M * sizeof(float));
+    C2 = (float *)malloc(N * M * sizeof(float));
 
     cout << "Matriz A:\n";
     leer(A, N, M);
@@ -34,15 +39,27 @@ int main()
     cout << "Alfa: ";
     cin >> a;
 
-    // Inciso A.
-    incisoA(A, B, C1, N, M);
-    cout << "Inciso a):\n";
+    // Inciso A en paralelo.
+    incisoA_paralelo(A, B, C1, N, M);
+    cout << "Inciso a) en paralelo:\n";
     mostrar(C1, N, M);
 
-    // Inciso B.
-    incisoB(A, B, C2, a, N, M);
-    cout << "Inciso b):\n";
+    // Inciso A en paralelo.
+    incisoA_secuencial(A, B, C1, N, M);
+    cout << "Inciso a) en secuencial:\n";
+    mostrar(C1, N, M);
+
+    // Inciso B en paralelo.
+    incisoB_paralelo(A, B, C2, a, N, M);
+    cout << "Inciso b) en paralelo:\n";
     mostrar(C2, N, M);
+
+    // Inciso B en secuencial.
+    incisoB_secuencial(A, B, C2, a, N, M);
+    cout << "Inciso b) en secuencial:\n";
+    mostrar(C2, N, M);
+
+    return 0;
 }
 
 void leer(unsigned int *A, long int N, long int M)
@@ -54,35 +71,50 @@ void leer(unsigned int *A, long int N, long int M)
     }
 }
 
-void mostrar(unsigned int *A, long int N, long int M)
+void mostrar(float *A, long int N, long int M)
 {
     long int i;
     for (i = 0; i < N * M; i++)
     {
         if (i % M == 0 & i != 0)
             cout << endl;
-        cout << A[i] << " ";
+        cout << A[i] << "\t";
     }
     cout << endl;
 }
 
-void incisoA(unsigned int *A, unsigned int *B, unsigned int *C, long int N, long int M)
+void incisoA_paralelo(unsigned int *A, unsigned int *B, float *C, long int N, long int M)
 {
     long int i, j, idx, idx_b;
 
-#pragma omp parallel for default(none) shared(A, B, C, N, M) private(i, j, idx, idx_b)
+#pragma omp parallel for collapse(2) default(none) shared(A, B, C, N, M) private(i, j, idx, idx_b)
     for (i = 0; i < N; i++)
     {
         for (j = 0; j < M; j++)
         {
-            idx = i * N + j;
-            idx_b = (N - i - 1) * N + (M - j - 1);
+            idx = i * M + j;
+            idx_b = (N - i - 1) * M + (M - j - 1);
             C[idx] = A[idx] + B[idx_b];
         }
     }
 }
 
-void incisoB(unsigned int *A, unsigned int *B, unsigned int *C, float a, long int N, long int M)
+void incisoA_secuencial(unsigned int *A, unsigned int *B, float *C, long int N, long int M)
+{
+    long int i, j, idx, idx_b;
+
+    for (i = 0; i < N; i++)
+    {
+        for (j = 0; j < M; j++)
+        {
+            idx = i * M + j;
+            idx_b = (N - i - 1) * M + (M - j - 1);
+            C[idx] = A[idx] + B[idx_b];
+        }
+    }
+}
+
+void incisoB_paralelo(unsigned int *A, unsigned int *B, float *C, float a, long int N, long int M)
 {
     long int i, j, idx;
 
@@ -91,7 +123,21 @@ void incisoB(unsigned int *A, unsigned int *B, unsigned int *C, float a, long in
     {
         for (j = 0; j < M; j++)
         {
-            idx = i * N + j;
+            idx = i * M + j;
+            C[idx] = a * A[idx] + (1 - a) * B[idx];
+        }
+    }
+}
+
+void incisoB_secuencial(unsigned int *A, unsigned int *B, float *C, float a, long int N, long int M)
+{
+    long int i, j, idx;
+
+    for (i = 0; i < N; i++)
+    {
+        for (j = 0; j < M; j++)
+        {
+            idx = i * M + j;
             C[idx] = a * A[idx] + (1 - a) * B[idx];
         }
     }

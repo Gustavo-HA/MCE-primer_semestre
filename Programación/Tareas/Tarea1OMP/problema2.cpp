@@ -53,7 +53,7 @@ void multiplicacion_matriz(float *A, float *B, float *C, long int N)
 {
     long int i, j, k, indiceA, indiceB, indiceC;
 
-#pragma omp parallel for default(none) shared(A, B, C, N) private(i, j, k, indiceA, indiceB, indiceC)
+    #pragma omp parallel for collapse(3) default(none) shared(A, B, C, N) private(i, j, k, indiceA, indiceB, indiceC)
     for (i = 0; i < N; i++)
     {
         for (j = 0; j < N; j++)
