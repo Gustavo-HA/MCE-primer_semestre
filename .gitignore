@@ -2,9 +2,10 @@
 *.Rhistory
 
 # Zip de codigos (Inferencia Estadística)
-*z.zip
+*.zip
 *tempCodeRunner.py
 *.png
 
 # Programas compilados
 *.exe
+*tempCodeRunnerFile.cpp
