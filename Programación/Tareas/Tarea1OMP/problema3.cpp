@@ -18,34 +18,40 @@ int main()
 {
     long int N, i;
     float *V, *A, *B;
+    int input_manual;
 
-    /* Llenado manual
-    cout << "N: ";
-    cin >> N;
+    // ¿Llenado manual o automatico?
+    cout << "Llenado manual (1) o automatico (0)?: ";
+    cin >> input_manual;
 
-    // Asignamos memoria
-    V = (float *)malloc(N * sizeof(float));
-    A = (float *)malloc((N - 1) * sizeof(float));
-    B = (float *)malloc((N - 2) * sizeof(float));
-
-    cout << "Vector V:\n";
-    for (i = 0; i < N; i++)
+    if (input_manual)
     {
-        cin >> V[i];
+        cout << "N: ";
+        cin >> N;
+
+        // Asignamos memoria
+        V = (float *)malloc(N * sizeof(float));
+        A = (float *)malloc((N - 1) * sizeof(float));
+        B = (float *)malloc((N - 2) * sizeof(float));
+
+        cout << "Vector V:\n";
+        for (i = 0; i < N; i++)
+        {
+            cin >> V[i];
+        }
     }
-    */
-
-    /* Llenado automático */
-    N = 10'000'000;
-    V = (float *)malloc(N * sizeof(float));
-    A = (float *)malloc((N - 1) * sizeof(float));
-    B = (float *)malloc((N - 2) * sizeof(float));
-
-    for (i = 0; i < N; i++)
+    else
     {
-        V[i] = (float)(i);
-    }
+        N = 100'000'000;
+        V = (float *)malloc(N * sizeof(float));
+        A = (float *)malloc((N - 1) * sizeof(float));
+        B = (float *)malloc((N - 2) * sizeof(float));
 
+        for (i = 0; i < N; i++)
+        {
+            V[i] = (float)(i);
+        }
+    }
     clock_t inicio, final;
     double tiempo;
 
@@ -56,14 +62,22 @@ int main()
     inciso_a_p(V, A, N);
     final = clock();
     tiempo = ((double)(final - inicio)) / CLOCKS_PER_SEC;
-    cout << "Tiempo en paralelo: " << tiempo << " segundos." << endl;
+    if (!input_manual)
+        cout << "Tiempo en paralelo: " << tiempo << " segundos." << endl;
 
     // Secuencial
     inicio = clock();
     inciso_a_s(V, A, N);
     final = clock();
     tiempo = ((double)(final - inicio)) / CLOCKS_PER_SEC;
-    cout << "Tiempo en secuencial: " << tiempo << " segundos." << endl;
+    if (!input_manual)
+        cout << "Tiempo en secuencial: " << tiempo << " segundos." << endl;
+
+    if (input_manual)
+    {
+        cout << "Resultado:\n";
+        mostrar_vector(A, N - 1);
+    }
 
     /*          INCISO B)           */
     cout << "\tINCISO B)\n";
@@ -72,14 +86,22 @@ int main()
     inciso_b_p(V, B, N);
     final = clock();
     tiempo = ((double)(final - inicio)) / CLOCKS_PER_SEC;
-    cout << "Tiempo en paralelo: " << tiempo << " segundos." << endl;
+    if (!input_manual)
+        cout << "Tiempo en paralelo: " << tiempo << " segundos." << endl;
 
     // Secuencial
     inicio = clock();
     inciso_b_s(V, B, N);
     final = clock();
     tiempo = ((double)(final - inicio)) / CLOCKS_PER_SEC;
-    cout << "Tiempo en secuencial: " << tiempo << " segundos." << endl;
+    if (!input_manual)
+        cout << "Tiempo en secuencial: " << tiempo << " segundos." << endl;
+
+    if (input_manual)
+    {
+        cout << "Resultado:\n";
+        mostrar_vector(B, N - 2);
+    }
 
     free(V);
     free(A);
