@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
+#include <time.h>
 
 using namespace std;
 
@@ -21,6 +22,7 @@ int main()
     float *C1, *C2;
     float a;
 
+    /* Input manual.
     cout << "N x M: ";
     cin >> N;
     cin >> M;
@@ -38,26 +40,48 @@ int main()
 
     cout << "Alfa: ";
     cin >> a;
+    */
 
-    // Inciso A en paralelo.
+    /* Input automático. */
+    clock_t inicio, final;
+    double tiempo;
+    N = M = 10000;
+    A = (unsigned int *)malloc(N * M * sizeof(unsigned int));
+    B = (unsigned int *)malloc(N * M * sizeof(unsigned int));
+    C1 = (float *)malloc(N * M * sizeof(float));
+    C2 = (float *)malloc(N * M * sizeof(float));
+
+    /* INCISO A)  */
+    // en paralelo.
+    cout << "\tINCISO A)\n";
+    inicio = clock();
     incisoA_paralelo(A, B, C1, N, M);
-    cout << "Inciso a) en paralelo:\n";
-    mostrar(C1, N, M);
+    final = clock();
+    tiempo = ((double)(final - inicio)) / CLOCKS_PER_SEC;
+    cout << "Tiempo en paralelo: " << tiempo << " segundos.\n";
 
-    // Inciso A en paralelo.
+    // en secuencial.
+    inicio = clock();
     incisoA_secuencial(A, B, C1, N, M);
-    cout << "Inciso a) en secuencial:\n";
-    mostrar(C1, N, M);
+    final = clock();
+    tiempo = ((double)(final - inicio)) / CLOCKS_PER_SEC;
+    cout << "Tiempo en secuencial: " << tiempo << " segundos.\n";
 
-    // Inciso B en paralelo.
+    /* INCISO B)  */
+    cout << "\tINCISO B)\n";
+    // en paralelo.
+    inicio = clock();
     incisoB_paralelo(A, B, C2, a, N, M);
-    cout << "Inciso b) en paralelo:\n";
-    mostrar(C2, N, M);
+    final = clock();
+    tiempo = ((double)(final - inicio)) / CLOCKS_PER_SEC;
+    cout << "Tiempo en paralelo: " << tiempo << " segundos.\n";
 
-    // Inciso B en secuencial.
+    // en secuencial.
+    inicio = clock();
     incisoB_secuencial(A, B, C2, a, N, M);
-    cout << "Inciso b) en secuencial:\n";
-    mostrar(C2, N, M);
+    final = clock();
+    tiempo = ((double)(final - inicio)) / CLOCKS_PER_SEC;
+    cout << "Tiempo en secuencial: " << tiempo << " segundos.\n";
 
     return 0;
 }
