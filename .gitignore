@@ -9,3 +9,5 @@
 # Programas compilados
 *.exe
 *tempCodeRunnerFile.cpp
+*.lib
+*.exp

@@ -1,0 +1,192 @@
+---
+Title: Problema 3
+author: Gustavo Hernández Angeles
+output: html_document
+---
+
+# Problema 3
+
+### Inciso a)
+
+Primero que nada, dado que trabajaremos con visualizaciones importaremos la librería **ggplot2** utilizando la línea **library(ggplot2)**. Definimos la función masa de la distribución uniforme como sigue
+
+
+```{r}
+library(ggplot2)
+
+uniforme <- function(x, n) {
+    # Devuelve 1/n si X = 0,1,...,n.
+    # Devuelve 0 en cualquier otro caso.
+
+    if (x %in% c(1:n)) {
+        return(1 / n)
+    } else {
+        return(0)
+    }
+}
+```
+
+Para graficarla, estableceremos los valores de **x** $= \{0,1,...,n\}$ y se utiliza la función **sapply(x, func)** para obtener los valores de la función evaluada para cada elemento de **x**, estos valores los guardaremos en la variable **y**. Teniendo estos dos arrays, es fácil realizar un gráfico de columnas utilizando **ggplot()** con la capa **geom_col(...)**, asegurandonos de establecer el parámetro **width = 0.05** para simular una línea recta. Por último, el gráfico se guarda utilizando la función **ggsave()**. Para efectos de reproducibilidad, todo este código lo guardo como una función llamada **df_graph** donde los argumentos serán el parametro $n$ y la ruta donde se guarda la imagen.
+
+```{r}
+df_graph <- function(n, ruta) {
+    # Guarda la gráfica de la distribución U(x;n)
+    # en la ruta específicada como U(n)_graph.tiff
+
+    x <- c(1:n)
+    y <- sapply(x, function(x_0) uniforme(x_0, n))
+    name <- paste0("U(", n, ")graph.png")
+
+    data <- data.frame(x = x, y = y)
+
+    ggplot(data = data, mapping = aes(x = x, y = y)) +
+        geom_col(width = 0.05) +
+        xlim(0, max(x) + 1) +
+        ylim(0, 1.1 / n) +
+        ylab("f(x)") +
+        theme_classic()
+
+    # Cambiar la ruta en caso de usar.
+    # ggsave(paste0(ruta, name),
+    #    width = 5, height = 3,
+    #    units = "in", device = "png", dpi = 500
+    # )
+}
+```
+
+
+Con este bloque de código llamamos a la función y creamos las gráficas $f_U(x)$.
+
+```{r results = "hide"}  
+ruta <- "C:/Users/gusta/Escritorio/"
+df_graph(n = 5, ruta = ruta)
+df_graph(n = 10, ruta = ruta)
+df_graph(n = 30, ruta = ruta)
+df_graph(n = 50, ruta = ruta)
+```
+
+Para la función de distribución acumulada (FDA) creamos la función **cdf_uniforme(x,n)**. Hacemos el cálculo mediante una variable auxiliar para la suma **prob** y un bucle sobre los posibles valores de $X$. De esta forma, acumulamos la probabilidad hasta $X=i$ mientras $x>i$. Retorna **NA** para $x=i$ por propósitos de visualización (genera la discontinuidad).
+
+```{r}
+cdf_uniforme <- function(x, n) {
+    # Regresa la función acumulativa de la
+    # distribución U(n).
+    prob <- 0
+    if (x %in% c(1:n)) {
+        return(NA)
+    } else if (x < min(c(1:n))) {
+        return(0)
+    }
+    for (i in c(1:n)) {
+        if (x > i) {
+            prob <- prob + uniforme(i, n)
+        }
+    }
+    return(prob)
+}
+```
+
+Para la generación de gráficas hacemos lo análogo al caso anterior; esta vez generamos los números para $x$ como continuos con la función **seq()**, donde irán desde -3 a $n+3$ con pasos de 0.01. Los valores de $F(x)$ se generan con la función **sapply()** y se guardan en la variable **y**.
+
+
+```{r}
+cdf_graph <- function(n, ruta) {
+    # Guarda la gráfica de la función acumulativa
+    # como F(x)_U(n)_graph.tiff en la ruta
+    # especificada.
+    x <- seq(-3, n + 3, by = 0.001)
+    y <- sapply(x, function(x_0) cdf_uniforme(x_0, n))
+    name <- paste0("F(x)_U(", n, ")graph.png")
+
+    ggplot(data.frame(x = x, y = y), aes(x, y)) +
+        geom_line() +
+        xlim(-3, max(x) + 1) +
+        ylim(0, 1.1) +
+        ylab("F(x)") +
+        theme_classic()
+
+    # Cambiar la ruta en caso de usar.
+    # ggsave(paste0(ruta, name),
+    #    width = 5, height = 3,
+    #    units = "in", device = "png", dpi = 500
+    # )
+}
+```
+
+Con este bloque de código llamamos a la función y creamos las gráficas $F_U(x)$.
+
+```{r results = "hide"}
+ruta <- "C:/Users/gusta/Escritorio/"
+cdf_graph(n = 5, ruta = ruta)
+cdf_graph(n = 10, ruta = ruta)
+cdf_graph(n = 30, ruta = ruta)
+cdf_graph(n = 50, ruta = ruta)
+```
+
+### Inciso c)
+
+Utilizamos la función **sample()** con un tamaño de muestra $n=10000$, con reemplazo y con una semilla especificada, realiza la simulación y la función **table()** devuelve una tabla de contingencia para cada valor de $x$ (de hecho, es por concidencia, puesto que al no tener específicados unos nombres la función **table** le asignará un número a cada elemento del array).
+
+```{r}
+n <- 10000
+observaciones <- table(sample(x = c(1:10), size = n, replace = TRUE, set.seed(13)))
+observaciones
+```
+
+Se puede calcular la media con $E(x)$, en este caso, aproximaremos $P(X=x) =$ Frecuencia de x / Total. Al operar con un objeto table, media será tipo table. Para guardar únicamente su valor hacemos **names(media) <- NULL**.
+
+```{r}
+media <- 0
+for (i in c(1:10)) {
+    media <- media + i * observaciones[i] / n
+}
+names(media) <- NULL
+media
+```
+
+Lo mismo para aproximar $Var(X) = E(x^2) - E(x)^2$ .
+```{r}
+varianza <- 0
+for (i in c(1:10)) {
+    varianza <- varianza + i**2 * observaciones[i] / n
+}
+names(varianza) <- NULL
+varianza <- varianza - media**2
+varianza
+```
+
+
+Para usar ggplot() y graficar las frecuencias debemos convertir las observaciones en un data frame. Utilizamos la función rename de la librería dplyr para cambiar el nombre de las columnas a uno más entendible.
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+obs_dataframe <- data.frame(muestra = observaciones)
+obs_dataframe <- obs_dataframe |>
+    rename(X = muestra.Var1, Frecuencia = muestra.Freq)
+obs_dataframe
+```
+
+
+Utilizamos la capa geom_col() para una grafica de columnas. También modificamos los ticks de la gráfica con scale_x_discrete() para visualizar mejor los valores.
+```{r}
+ggplot(data = obs_dataframe) +
+    geom_col(mapping = aes(x = X, y = Frecuencia), fill = "blue") +
+    scale_x_discrete(
+        name = "x",
+        limits = c(1:10)
+    ) +
+    scale_y_discrete(
+        name = "Frecuencia",
+        limits = seq(100, 1.2 * n, by = 100)
+    ) +
+    ylim(0, 0.12 * n) +
+    theme_classic()
+
+# Cambiar la ruta en caso de usar.
+# ggsave("C:/Users/gusta/Escritorio/test.png",
+#    width = 5, height = 3,
+#    units = "in", device = "png", dpi = 500
+# )
+```

@@ -1,0 +1,232 @@
+```{r}
+# . library(httpgd)
+```
+
+# Problema 6
+
+Cargamos el conjunto de datos Maiz.csv.
+```{r, message = FALSE}
+library(readr)
+library(tidyverse)
+df <- read.csv2("./Maiz.csv", sep = ",")
+names(df) <- c("Maiz", "Tortilla") # renombramos columnas
+```
+
+Vemos que contiene a los valores como texto, lo modificamos con 
+```{r}
+df$Maiz <- as.numeric(df$Maiz)
+df$Tortilla <- as.numeric(df$Tortilla)
+```
+
+
+### Inciso a)
+
+En el método de mínimos cuadrados se busca una relación linear entre una variable dependiente $y$ y otra variable independiente $x$. En este caso el costo por tonelada de tortilla como función del costo por tonelada de maiz.  
+
+Implementamos el método de mínimos cuadrados en una función:
+
+```{r}
+min_cuadrados <- function(x, y, dataset) {
+  # Función que realiza los cálculos para obtener los valores m y b
+  # de la regresión:
+  # .            y  =  m * x  +  b
+  # Toma como entrada los nombres de las columnas X y Y, además del
+  # dataset de donde se toman.
+  # Regresa los valores m y b en un array de dos elementos.
+
+  xx <- dataset[, x]
+  yy <- dataset[, y]
+  n <- length(xx)
+
+  m <- (n * sum(xx * yy) - sum(xx) * sum(yy)) / (n * sum(xx * xx) - sum(xx)**2)
+  b <- (sum(yy) - m * sum(xx)) / n
+
+  return(c(m, b))
+}
+```
+
+```{r}
+myb <- min_cuadrados("Maiz", "Tortilla", df)
+m <- myb[1]
+b <- myb[2]
+sprintf("y = %.2fx + %.2f", m, b)
+```
+
+
+Realizamos la grafica de los datos junto a la regresión.
+```{r}
+x_ls <- seq(
+  from = min(df[, "Maiz"]) * 0.9,
+  to = max(df[, "Maiz"]) * 1.1,
+  by = 0.25
+)
+y_ls <- m * x_ls + b
+
+p_ls_reg <- ggplot() +
+  geom_point(
+    data = df,
+    aes(x = Maiz, y = Tortilla, color = "Muestra"), alpha = 0.5
+  ) +
+  geom_line(
+    aes(x = x_ls, y = y_ls, color = "Regresion - LS")
+  ) +
+  scale_color_manual(
+    values = c("black", "red")
+  ) +
+  labs(
+    x = "Precio / tonelada de maiz",
+    y = "Precio / tonelada de tortilla", color = NULL
+  ) +
+  theme(
+    legend.position = "inside",
+    legend.position.inside = c(0.05, 0.95),
+    legend.justification = c(0, 1),
+    legend.background = element_blank()
+  )
+```
+
+Opcionalmente, guardamos la figura.
+
+```{r}
+ggsave("./figuras/lsr-maiz.png",
+  plot = p_ls_reg, width = 4, height = 4, dpi = 400
+)
+```
+
+### Inciso b)
+
+Calcule de forma explícita la estimación de los coeficientes via regresión no-paramétrica tipo kernel.  
+
+Realizaremos la graficación utilizando un kernel gaussiano, la forma de la curva de regresión mediante este método es:
+$$ \overline{y}_n(x) = \frac{\sum_{i=1}^{n}y_i K(u)}{\sum_{i = 1}^{n} K(u)} $$
+Siendo $u = (x-x_i)/h$.  
+
+Para calcular la curva de regresión en un punto x, podemos reutilizar código del problema 4.
+
+```{r}
+regresion_ke <- function(x, nombre_x, nombre_y, kernel, dataset, h = NULL) {
+  # Por default, se utiliza el valor h que minimiza el MISE
+  # en dado caso que el kernel sea gaussian.
+  # Para otros Kernel utiliza la rule of Thumb de Silverman
+
+  x_i <- dataset[, nombre_x]
+  y_i <- dataset[, nombre_y]
+  n <- length(x_i)
+
+
+  if (kernel == "gaussian") {
+    h <- 1.06 * sd(x_i) * n**(-1 / 5)
+  } else {
+    h <- 0.9 * min(sd(x), IQR(x) / 1.34) * n**(-1 / 5)
+  }
+
+  u <- (x - x_i) / h
+
+  # En algunas funciones necesitamos que |u| <= 1
+  u_acotada <- pmax(pmin(u, 1), -1)
+
+  if (kernel == "gaussian") {
+    k <- dnorm(u)
+  } else if (kernel == "epanechnikov") {
+    k <- (3 / 4) * (1 - u_acotada**2)
+  } else if (kernel == "triangular") {
+    k <- (1 - abs(u_acotada))
+  } else if (kernel == "uniform") {
+    # Para que no sume todos hacemos que no tome los extremos.
+    k <- dunif(u_acotada, min = -0.99, max = 0.99)
+  } else if (kernel == "biweight") {
+    k <- (15 / 16) * (1 - u_acotada**2)**2
+  }
+
+  resultado <- sum(y_i * k) / sum(k)
+
+  return(resultado)
+}
+```
+
+Se grafica la curva junto a los datos de la muestra.
+
+```{r}
+kernel <- "gaussian"
+x_regke <- seq(
+  from = min(df[, "Maiz"]) * 0.9,
+  to = max(df[, "Maiz"]) * 1.1,
+  by = 0.25
+)
+y_regke <- sapply(
+  x_regke,
+  function(x) {
+    regresion_ke(x, nombre_x = "Maiz", nombre_y = "Tortilla", kernel, df)
+  }
+)
+
+p_regke <- ggplot() +
+  geom_point(
+    data = df,
+    aes(x = Maiz, y = Tortilla, color = "Muestra"), alpha = 0.5
+  ) +
+  geom_line(
+    aes(x = x_regke, y = y_regke, color = "Regresion - KE")
+  ) +
+  scale_color_manual(
+    values = c("black", "blue")
+  ) +
+  labs(
+    x = "Precio / tonelada de maiz",
+    y = "Precio / tonelada de tortilla", color = NULL
+  ) +
+  theme(
+    legend.position = "inside",
+    legend.position.inside = c(0.05, 0.95),
+    legend.justification = c(0, 1),
+    legend.background = element_blank()
+  )
+```
+
+```{r}
+ggsave("./figuras/kr-maiz.png",
+  plot = p_regke, width = 4, height = 4, dpi = 400
+)
+```
+
+
+### Inciso c)
+
+Realizamos una gráfica para comparar ambos modelos.
+
+```{r}
+p_comparison <- ggplot() +
+  geom_point(
+    data = df,
+    aes(x = Maiz, y = Tortilla, color = "Muestra"), alpha = 0.3
+  ) +
+  geom_line(
+    aes(x = x_regke, y = y_regke, color = "Regresion - KE")
+  ) +
+  geom_line(
+    aes(x = x_ls, y = y_ls, color = "Regresion - LS")
+  ) +
+  scale_color_manual(
+    values = c("black", "blue", "red")
+  ) +
+  labs(
+    x = "Precio / tonelada de maiz",
+    y = "Precio / tonelada de tortilla", color = NULL
+  ) +
+  theme(
+    legend.position = "inside",
+    legend.position.inside = c(0.05, 0.95),
+    legend.justification = c(0, 1),
+    legend.background = element_blank()
+  )
+```
+
+```{r}
+ggsave("./figuras/comparison.png",
+  plot = p_comparison,
+  width = 4, height = 4, dpi = 400
+)
+```
+
+
+

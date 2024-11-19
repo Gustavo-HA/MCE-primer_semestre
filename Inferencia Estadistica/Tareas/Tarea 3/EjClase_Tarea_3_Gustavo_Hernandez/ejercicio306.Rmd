@@ -1,0 +1,144 @@
+---
+title: "ejercicio306"
+author: "Gustavo Hernández"
+date: "2024-10-05"
+output: html_document
+---
+
+### Inciso a)
+Definimos los parámetros de la distribuciones Weibull.
+
+```{r}
+a1 = 1
+b1 = 2
+
+a2 = 2
+b2 = 2
+
+a3 = 3
+b3 = 4
+```
+
+Realizaremos las graficas mediante ggplot utilizando la función de densidad de probabilidad dweibull.
+
+```{r}
+# dweibull utiliza parámetros que, para la clase,
+# a = beta y sigma = alfa**(-1/beta)
+x = seq(from = 0, to = 2.5, by = 0.01)
+w1 = dweibull(x, shape = b1, scale = 1/a1)
+w2 = dweibull(x, shape = b2, scale = 1/a2)
+w3 = dweibull(x, shape = b3, scale = 1/a3)
+
+datos <- data.frame(x = x,
+                    w1 = w1,
+                    w2 = w2,
+                    w3 = w3)
+
+alfa = "\u03b1"
+beta = "\u03b2"
+
+require(ggplot2)
+library(ggplot2)
+
+ggplot(datos, aes(x = x)) +
+  geom_line(aes(y = w1, color = paste(alfa,"=",a1,",",beta,"=",b1))) +
+  geom_line(aes(y = w2, color = paste(alfa,"=",a2,",",beta,"=",b2))) +
+  geom_line(aes(y = w3, color = paste(alfa,"=",a3,",",beta,"=",b3))) +
+  scale_color_manual(values = c("blue","red","black")) +
+  labs(x = "x", y = NULL, color = NULL, title = "PDF de distribuciones Weibull") +
+  theme(panel.background = element_blank(),
+        panel.border = element_rect(colour="black",fill = NA, linewidth = 1),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "inside",
+        legend.position.inside = c(0.95,0.95),
+        legend.justification = c(1,1),
+        legend.background = element_rect(fill = NA))
+
+ggsave("e306_1.png", width = 5, height = 4)
+
+
+```
+
+### Inciso b)
+
+Graficaremos las funciones de confiabilidad utilizando pweibull, dado que $R(t) = 1-F(t)$.
+
+```{r}
+datos$cw1 = 1 - pweibull(datos$x, shape = b1, scale = 1/a1)
+datos$cw2 = 1 - pweibull(datos$x, shape = b2, scale = 1/a2)
+datos$cw3 = 1 - pweibull(datos$x, shape = b3, scale = 1/a3)
+
+# De forma similar al inciso anterior
+
+require(ggplot2)
+library(ggplot2)
+
+ggplot(datos, aes(x = x)) +
+  geom_line(aes(y = cw1, color = paste(alfa,"=",a1,",",beta,"=",b1))) +
+  geom_line(aes(y = cw2, color = paste(alfa,"=",a2,",",beta,"=",b2))) +
+  geom_line(aes(y = cw3, color = paste(alfa,"=",a3,",",beta,"=",b3))) +
+  scale_color_manual(values = c("blue","red","black")) +
+  labs(x = "x", y = "R(t)", color = NULL, title = "Confiabilidad de distribuciones Weibull") +
+  theme(panel.background = element_blank(),
+        panel.border = element_rect(colour="black",fill = NA, linewidth = 1),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "inside",
+        legend.position.inside = c(0.95,0.95),
+        legend.justification = c(1,1),
+        legend.background = element_rect(fill = NA))
+
+ggsave("e306_2_confiabilidad.png", width = 5, height = 4)
+
+
+
+```
+
+Para graficar la función de riesgo $h(t)$ utilizaremos su definición $h(t) = f(t)/R(t)$:
+
+```{r}
+datos$h1 <- datos$w1 / datos$cw1
+datos$h2 <- datos$w2 / datos$cw2
+datos$h3 <- datos$w3 / datos$cw3
+
+# Esta vez, haremos una grafica para cada conjunto de parámetros
+# esto porque las graficas difieren mucho una entre otras, lo que puede
+# dificultar la visualizacion.
+
+require(ggplot2)
+library(ggplot2)
+
+ggplot(datos, aes(x = x)) +
+  geom_line(aes(y = h1), color = "blue") +
+  #geom_line(aes(y = h2), color = "red") +
+  #geom_line(aes(y = h3), color = "black") +
+  labs(x = "x", y ="h(t)", color = NULL) +
+  theme(panel.background = element_blank(),
+        panel.border = element_rect(colour="black",fill = NA, linewidth = 1))
+
+ggsave("e306_2_riesgo1.png", width = 5, height = 4)
+
+ggplot(datos, aes(x = x)) +
+  #geom_line(aes(y = h1), color = "blue") +
+  geom_line(aes(y = h2), color = "red") +
+  #geom_line(aes(y = h3), color = "black") +
+  labs(x = "x", y ="h(t)", color = NULL) +
+  theme(panel.background = element_blank(),
+        panel.border = element_rect(colour="black",fill = NA, linewidth = 1))
+
+ggsave("e306_2_riesgo2.png", width = 5, height = 4)
+
+ggplot(datos[1:length(x[x<1]),], aes(x = x[x<1])) +
+  #geom_line(aes(y = h1), color = "blue") +
+  #geom_line(aes(y = h2), color = "red") +
+  geom_line(aes(y = h3[1:length(x[x<1])]), color = "black") +
+  labs(x = "x", y = "h(t)", color = NULL) +
+  theme(panel.background = element_blank(),
+        panel.border = element_rect(colour="black",fill = NA, linewidth = 1))
+
+ggsave("e306_2_riesgo3.png", width = 5, height = 4)
+
+
+```
+
+
+

@@ -1,0 +1,62 @@
+---
+title: "CodigoR"
+author: "Edgar J"
+date: "15/10/2020"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, out.width = '80%', collapse = TRUE)
+```
+
+## R Markdown
+
+
+```{r cars}
+summary(cars)
+```
+
+Es posible insertar valores de objetos de R en el texto.
+
+```{r}
+x = 5  # radio de un círculo
+```
+
+Para un círculo con radio `r x`,
+Su area es `r pi * x^2`.
+
+## Insertando gráficas
+
+Se pueden insertar gráficas, por ejemplo:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Con `echo = FALSE` se evita mostrar el código que genero el gráfico.
+
+Loas gráficos se muestran, generalmente, inmediatamente después del código que lo genera.
+```{r}
+plot(cars, pch = 18)
+```
+
+```{r, fig.show='hold', out.width='50%',fig.cap='Graficas al lado'}
+par(mar = c(4, 4, .2, .1))
+plot(cars, pch = 19)
+plot(pressure, pch = 17)
+```
+
+## Tablas
+
+Las tablas dependen de una llamada externa
+
+```{r tables-mtcars}
+knitr::kable(iris[1:5, ], caption = 'Titulo de la tabla iris')
+```
+
+
+
