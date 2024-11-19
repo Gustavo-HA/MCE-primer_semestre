@@ -79,32 +79,26 @@ int main()
     cout << "Valor de alfa: ";
     cin >> a;
 
-    size_t size = N * M * sizeof(unsigned int);
+    size_t size = N * M * sizeof(unsigned int), size_c2 = N * M * sizeof(float);
 
     // Asignamos memoria en el host
     A_h = (unsigned int *)malloc(size);
     B_h = (unsigned int *)malloc(size);
     C_1h = (unsigned int *)malloc(size);
-    C_2h = (float *)malloc(size);
+    C_2h = (float *)malloc(size_c2);
 
     // Asignamos memoria en el device
     cudaError_t err = cudaSuccess;
-    cudaMalloc((void **)&A_d, size);
+    err = cudaMalloc((void **)&A_d, size);
     if (err != cudaSuccess)
     {
         fprintf(stderr, "Fallo al asignar memoria al vector A en el device\n");
         exit(EXIT_FAILURE);
     }
-    cudaMalloc((void **)&B_d, size);
+    err = cudaMalloc((void **)&B_d, size);
     if (err != cudaSuccess)
     {
         fprintf(stderr, "Fallo al asignar memoria al vector B en el device\n");
-        exit(EXIT_FAILURE);
-    }
-    cudaMalloc((void **)&C_1d, size);
-    if (err != cudaSuccess)
-    {
-        fprintf(stderr, "Fallo al asignar memoria al vector C_1 en el device\n");
         exit(EXIT_FAILURE);
     }
 
@@ -113,8 +107,8 @@ int main()
     {
         for (j = 0; j < M; j++)
         {
-            A_h[i] = i * j;
-            B_h[j] = i + j;
+            A_h[i * M + j] = i * j;
+            B_h[i * M + j] = i + j;
         }
     }
 
@@ -125,10 +119,16 @@ int main()
     // Configuración del lanzamiento de kernels.
     int BLOCK_SIZE = 16;
     dim3 block_size(BLOCK_SIZE, BLOCK_SIZE);
-    dim3 n_blocks(N / block_size.x + (N % block_size.x == 0 ? 0 : 1), M / block_size.y + (M % block_size.y == 0 ? 0 : 1));
+    dim3 n_blocks((M - 1 + block_size.x) / block_size.x, (N - 1 + block_size.y) / block_size.y);
 
     // ----------- INCISO A) -----------------------
     cout << "\tInciso A):\n";
+    err = cudaMalloc((void **)&C_1d, size); // Asignamos memoria para el inciso A
+    if (err != cudaSuccess)
+    {
+        fprintf(stderr, "Fallo al asignar memoria al vector C_1 en el device\n");
+        exit(EXIT_FAILURE);
+    }
     //             PARALELO
     // Sin tomar tiempo de transferencia de memoria.
     cudaEventCreate(&tiempo1p);
@@ -138,6 +138,7 @@ int main()
     cudaEventRecord(tiempo2p);
 
     cudaEventSynchronize(tiempo2p);
+    cudaDeviceSynchronize();
     cudaEventElapsedTime(&tiempo_paralelo, tiempo1p, tiempo2p);
     tiempo_paralelo = tiempo_paralelo / (1000); // Milisegundos a segundos.
     cout << "Tiempo en paralelo (segundos):\t\t" << tiempo_paralelo << endl;
@@ -151,10 +152,12 @@ int main()
     cudaEventRecord(tiempo2p);
 
     cudaEventSynchronize(tiempo2p);
+    cudaDeviceSynchronize();
     cudaEventElapsedTime(&tiempo_paralelo, tiempo1p, tiempo2p);
     tiempo_paralelo = tiempo_paralelo / (1000); // Milisegundos a segundos.
     cout << "Tiempo en paralelo (segundos) con TM:\t" << tiempo_paralelo << endl;
-    cudaFree(C_1d);
+
+    cudaFree(C_1d); // Ya no necesitamos C_1d
 
     //          SECUENCIAL
     clock_t inicio, final;
@@ -166,7 +169,7 @@ int main()
     cout << "Tiempo en secuencial (segundos):\t" << tiempo << endl;
 
     // -------------- INCISO B) -----------------------
-    cudaMalloc((void **)&C_2d, size);
+    err = cudaMalloc((void **)&C_2d, size_c2); // Asignamos memoria para el inciso B.
     if (err != cudaSuccess)
     {
         fprintf(stderr, "Fallo al asignar memoria al vector C_2 en el device\n");
@@ -181,6 +184,7 @@ int main()
     cudaEventRecord(tiempo2p);
 
     cudaEventSynchronize(tiempo2p);
+    cudaDeviceSynchronize();
     cudaEventElapsedTime(&tiempo_paralelo, tiempo1p, tiempo2p);
     tiempo_paralelo = tiempo_paralelo / (1000); // Milisegundos a segundos.
     cout << "Tiempo en paralelo (segundos):\t\t" << tiempo_paralelo << endl;
@@ -188,14 +192,16 @@ int main()
     // Tomando tiempo de transferencia de memoria.
     cudaEventRecord(tiempo1p);
     incisoB<<<n_blocks, block_size>>>(A_d, B_d, C_2d, a, N, M);
-    cudaMemcpy(C_2h, C_2d, size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(C_2h, C_2d, size_c2, cudaMemcpyDeviceToHost);
     cudaEventRecord(tiempo2p);
 
     cudaEventSynchronize(tiempo2p);
+    cudaDeviceSynchronize();
     cudaEventElapsedTime(&tiempo_paralelo, tiempo1p, tiempo2p);
     tiempo_paralelo = tiempo_paralelo / (1000); // Milisegundos a segundos.
     cout << "Tiempo en paralelo (segundos) con TM:\t" << tiempo_paralelo << endl;
-    cudaFree(C_2d);
+
+    cudaFree(C_2d); // Se libera la memoria.
 
     //          SECUENCIAL
     inicio = clock();
@@ -208,8 +214,9 @@ int main()
     cudaFree(B_d);
     free(A_h);
     free(B_h);
-
     free(C_1h);
     free(C_2h);
+    cudaEventDestroy(tiempo1p);
+    cudaEventDestroy(tiempo2p);
     return 0;
 }
